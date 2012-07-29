@@ -734,7 +734,10 @@ foreach my $line (@headers) {
 
 	# Get the last modified date
 	if ($line =~ /Last-Modified/i) {
-		$modifiedDate = substr($line, 15);
+		# The Last-Modified header may not be on a new line, so find where it starts
+		# on the line, then take the rest of the line after it as the mod date
+		my $lastModifiedPosition = index($line, "Last-Modified");
+		$modifiedDate = substr($line, $lastModifiedPosition + 15);
 	}
 }
 
