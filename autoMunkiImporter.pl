@@ -892,6 +892,9 @@ if ($downloadFileName =~ /.zip$/) {
 	
 	# Unmount and Detach Disk Image
 	system("$tools{'hdiutil'} detach $mountPoint > /dev/null");		
+} elsif ($downloadFileName =~ /.pkg$/ || $downloadFileName =~ /.mpkg$/) {
+	# Flat package, so no prep is required
+	$target = $downloadFileName;
 } else {
 	# Download is in an unknown format.
 	logMessage("stderr, log","ERROR: Download is in an unknown format. Exiting...\n", $logFile);
