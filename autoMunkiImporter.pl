@@ -15,7 +15,7 @@
 # approach should allow you to monitor most applications.
 
 # It also supports downloads in DMG (including support for disk images 
-# with licence agreements), ZIP, TAR.GZ, TGZ, and TBZ. It will import a 
+# with licence agreements), ZIP, TAR, TAR.GZ, TGZ, and TBZ. It will import a 
 # single item (APP or PKG) from anywhere within the download, so the 
 # content doesn't have to be in the top level folder. This is achieved by
 # using find to locate the item (e.g. the Adobe Flash Player.pkg from 
@@ -839,7 +839,7 @@ if ($downloadFileName =~ /.zip$/) {
 	# ZIP File
 	system("$tools{'ditto'} -xk \"$downloadFileName\" \"$tmpDIR\"");
 	$target = `$tools{'find'} \"$tmpDIR\" -name \"$itemToImport\" -print 2>/dev/null`;
-} elsif ($downloadFileName =~ /.tar.gz$/ || $downloadFileName =~ /.tgz$/ || $downloadFileName =~ /.tbz/) {
+} elsif ($downloadFileName =~ /.tar$/ || $downloadFileName =~ /.tar.gz$/ || $downloadFileName =~ /.tgz$/ || $downloadFileName =~ /.tbz/) {
 	# TAR and friends file
 	system("$tools{'tar'} -xf \"$downloadFileName\" -C \"$tmpDIR\"");
 	$target = `$tools{'find'} \"$tmpDIR\" -name \"$itemToImport\" -print 2>/dev/null`;
@@ -1087,9 +1087,9 @@ version (it can also handle landing pages before the actual download), and spark
 generic approach should allow you to monitor most applications.
 
 It also supports downloads in DMG (including support for disk images with licence agreements), ZIP,
-TAR.GZ, TGZ, and TBZ. It will import a single item (APP or PKG) from anywhere within the download, 
-so the content doesn't have to be in the top level folder. This is achieved by using find to locate
-the item (e.g. the Adobe Flash Player.pkg from within the Adobe Flash download).
+TAR TAR.GZ, TGZ, and TBZ. It will import a single item (APP or PKG) from anywhere within the 
+download, so the content doesn't have to be in the top level folder. This is achieved by using find 
+to locate the item (e.g. the Adobe Flash Player.pkg from within the Adobe Flash download).
 
 =head1 DATA PLIST
 
