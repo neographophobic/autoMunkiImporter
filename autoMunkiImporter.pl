@@ -841,11 +841,11 @@ my $itemToImport = perlValue(getPlistObject($dataPlist, "autoMunkiImporter",  "i
 if ($downloadFileName =~ /.zip$/) {
 	# ZIP File
 	system("$tools{'ditto'} -xk \"$downloadFileName\" \"$tmpDIR\"");
-	$target = `$tools{'find'} \"$tmpDIR\" -name \"$itemToImport\" -print 2>/dev/null`;
+	$target = `$tools{'find'} \"$tmpDIR\" -iname \"$itemToImport\" -print 2>/dev/null`;
 } elsif ($downloadFileName =~ /.tar$/ || $downloadFileName =~ /.tar.gz$/ || $downloadFileName =~ /.tgz$/ || $downloadFileName =~ /.tbz/) {
 	# TAR and friends file
 	system("$tools{'tar'} -xf \"$downloadFileName\" -C \"$tmpDIR\"");
-	$target = `$tools{'find'} \"$tmpDIR\" -name \"$itemToImport\" -print 2>/dev/null`;
+	$target = `$tools{'find'} \"$tmpDIR\" -iname \"$itemToImport\" -print 2>/dev/null`;
 } elsif ($downloadFileName =~ /.dmg$/ || $downloadFileName =~ /.iso$/) {
 	# Disk Image
 	
@@ -880,7 +880,7 @@ if ($downloadFileName =~ /.zip$/) {
 	logMessage("stdout, log", "Disk image mounted at $mountPoint...", $logFile);
 
 	# Find and copy item from disk image
-	$target = `$tools{'find'} \"$mountPoint\" -name \"$itemToImport\" -print 2>/dev/null`;
+	$target = `$tools{'find'} \"$mountPoint\" -iname \"$itemToImport\" -print 2>/dev/null`;
 	if ($target ne "") {
 		# Item was found, so copy it out of the disk image
 		chomp($target);
