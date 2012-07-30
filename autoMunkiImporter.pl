@@ -195,7 +195,7 @@ sub prepareLog {
 	my $pad = "\n\n---------------------------------------------------";
 	system("$tools{'echo'} \"$pad\" >> $logFile");	
 
-	if ($verbose) {
+	if ($verbose || $progress) {
 		print $pad . "\n";
 	}
 }
