@@ -479,12 +479,12 @@ sub findDownloadLinkOnPage {
 		$foundLink = findURL($url, $mech, $secondLinkRegex);
 
 		# Ensure there aren't any additional redirects
-		$url = findFinalURLAfterRedirects($foundLink);
+		$foundLink = findFinalURLAfterRedirects($foundLink);
 		# URL can have spaces, so encode them
 		$foundLink = escapeURL($foundLink);
 	}
 
-	return $url;
+	return $foundLink;
 }
 
 sub findDownloadLinkFromSparkleFeed {
