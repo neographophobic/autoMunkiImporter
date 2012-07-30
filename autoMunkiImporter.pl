@@ -716,6 +716,12 @@ if ($showScriptVersion) {
 	exit 0;
 }
 
+# Check email details have been set
+if ($smtpServer eq "REPLACE_ME" || $fromAddress eq 'REPLACE_ME@example.com' || $toAddress eq 'REPLACE_ME@example.com') {
+	logMessage("stderr, log", "ERROR: The default smtpServer, emailTo and emailFrom variables need to be set within the script...", $logFile);
+	exit 1;
+}
+
 # Check $dataPlistPath was set, and that a file exists at the location 
 if (! defined($dataPlistPath) || ! -e $dataPlistPath) {
 	# No argument, or does not exist, bail showing usage
