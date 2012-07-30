@@ -86,9 +86,11 @@ my $makecatalogs = 1; # 1 = True, 0 = False;
 ###############################################################################
 
 # Data Plists
+my @dataPlists = ();
 my $dataPlistPath = undef;
 my $dataPlist = undef;
 my $type = undef;
+my $dataPlistSourceIsDir = 0; # Whether the data plist(s) came from a dir listing
 
 # Email
 my $subject = "";
@@ -245,23 +247,21 @@ sub logMessage {
 ###############################################################################
 
 sub readDataPlist {
-	# Check $dataPlistPath was set, and that a file exists at the location 
-	if (! defined($dataPlistPath) || ! -e $dataPlistPath) {
-		# No argument, or not a file, bail showing usage
-		logMessage("stderr, log", "ERROR: The data plist needs to be provided via a command line argument of --data /path/to/data.plist", $logFile);
-		pod2usage(1);
-		exit 1;
-	} else {
-		# Get the config data
-		my $dataPlist = loadDefaults( expandFilePath($dataPlistPath) );
-		if ( ! defined($dataPlist)) {
-			# Error reading the Plist. Display an error and exit
-			logMessage("stderr, log", "ERROR: The data plist can't be parsed", $logFile);
-			exit 1;
+	my ($dataPlistPath) = @_;
+
+	# Get the config data
+	my $dataPlist = loadDefaults( expandFilePath($dataPlistPath) );
+	if ( ! defined($dataPlist)) {
+		# Error reading the Plist. Display an error and exit
+		logMessage("stderr, log", "ERROR: The data plist can't be parsed", $logFile);
+		if ($dataPlistSourceIsDir) {
+			next;
 		} else {
-			checkDataPlistForRequiredKeys($dataPlist);
-			return $dataPlist;
+			exit 1;
 		}
+	} else {
+		checkDataPlistForRequiredKeys($dataPlist);
+		return $dataPlist;
 	}
 }
 
@@ -278,7 +278,11 @@ sub checkDataPlistForRequiredKeys {
 	if ($missingKeys) {
 		# Ensure that the required keys were present
 		logMessage("stderr, log", "ERROR: Missing Keys in Data Plist. Require autoMunkiImporter dict, with URLToMonitor, name, type, and itemToImport strings.", $logFile);
-		exit 1;
+		if ($dataPlistSourceIsDir) {
+			next;
+		} else {
+			exit 1;
+		}
 	} 
 	
 	# Check the "type" key, and any additional required items
@@ -287,7 +291,11 @@ sub checkDataPlistForRequiredKeys {
 		eval { $dummyVar = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "downloadLinkRegex")); }; $missingKeys = 1 if $@;
 		if ($missingKeys) {
 			logMessage("stderr, log", "ERROR: Missing Keys in Data Plist. Require autoMunkiImporter dict, with downloadLinkRegex when type = dynamic.", $logFile);
-			exit 1;	
+			if ($dataPlistSourceIsDir) {
+				next;
+			} else {
+				exit 1;
+			}
 		}
 	} else {
 		# Static or Sparkle - no additional keys required
@@ -305,7 +313,11 @@ sub getType {
 		$type = "sparkle";	
 	} else {
 		logMessage("stderr, log", "ERROR: Type: \"$type\" is unsupported. Supported types are static, dynamic, or sparkle.", $logFile);
-		exit 1;
+		if ($dataPlistSourceIsDir) {
+			next;
+		} else {
+			exit 1;
+		}
 	}
 }
 
@@ -617,12 +629,30 @@ sub hackAroundLicenceAgreementsInDiskImages {
 
 }
 
+sub getDataPlists {
+	my ($path) = @_;
+	my @dirContents = <$path/*>;
+	my $item;
+	foreach $item (@dirContents) {
+		if (-f $item && $item =~ /\.plist$/ && $item !~ /_template\.plist$/ ) {
+			# Plist, so add it to the array
+			push(@dataPlists, $item);
+		}
+		if (-d $item) {
+			# Directory, so check it's contents
+			 getDataPlists($item);
+		 }
+	} 
+}
+
 ###############################################################################
 # Main App - Prep
 ###############################################################################
 
 # Check Pre-reqs are meet
 checkPerlDependencies() or die;
+checkMunkiRepoIsAvailable() or die;
+checkTools() or die;
 
 # Handle Command Line options
 GetOptions ('data=s'     	=> \$dataPlistPath, 
@@ -643,8 +673,27 @@ if ($showScriptVersion) {
 	exit 0;
 }
 
+# Check $dataPlistPath was set, and that a file exists at the location 
+if (! defined($dataPlistPath) || ! -e $dataPlistPath) {
+	# No argument, or does not exist, bail showing usage
+	logMessage("stderr, log", "ERROR: The data plist needs to be provided via a command line argument of --data /path/to/data.plist", $logFile);
+	pod2usage(1);
+	exit 1;
+}
+
+if (-d $dataPlistPath) {
+	# Path to a directory of plists
+	getDataPlists($dataPlistPath);
+	$dataPlistSourceIsDir = 1;
+} else {
+	# Path to a specific plist, not a directory
+	push(@dataPlists, $dataPlistPath);
+	$dataPlistSourceIsDir = 0;
+}
+
+foreach $dataPlistPath (@dataPlists) {
 # Read the data plist, which contains config for this script
-$dataPlist = readDataPlist();
+$dataPlist = readDataPlist($dataPlistPath);
 
 # Get product name
 my $name = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "name"));
@@ -662,7 +711,9 @@ my $disabled = 0; # False
 eval { $disabled = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "disabled")); };
 if ($disabled) {
 	logMessage("stdout, log", "Automatic Update Check is DISABLED. Exiting...", $logFile);
-	exit 0;
+	if ($dataPlistSourceIsDir) {
+		next;
+	} 
 }
 
 # Show basic progress info
@@ -670,9 +721,6 @@ if ($progress) {
 	print "App Name: $name\n";
 }
 
-# Check other dependencies
-checkMunkiRepoIsAvailable() or die;
-checkTools() or die;
 
 ###############################################################################
 # Main App - Step 1: Get the URL for the download
@@ -681,7 +729,11 @@ checkTools() or die;
 my $url = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "URLToMonitor"));
 if ($url eq "") {
 	logMessage("stderr, log", "ERROR: URL is missing. Exiting...", $logFile);
-	exit 1;
+	if ($dataPlistSourceIsDir) {
+		next;
+	} else {
+		exit 1;
+	}
 }
 
 # Replace the XML encoding of &
@@ -707,7 +759,11 @@ if (! defined $url || $url eq "") {
 	$subject = $subjectPrefix . " ERROR: $name - Can't determine final URL";
 	$message = "Can't determine final URL. Script terminated...";
 	sendEmail(subject => $subject, message => $message);
-	exit 1;
+	if ($dataPlistSourceIsDir) {
+		next;
+	} else {
+		exit 1;
+	}
 }
 
 logMessage("stdout, log", "Final URL: $url", $logFile);
@@ -747,7 +803,11 @@ if (! $httpCode && $url =~ /^http/) {
 	$subject = $subjectPrefix . " ERROR: $name - Problem accessing file to download";
 	$message = "There was a problem accessing the file to download. The URL $url returned the following error and / or headers:-\n$headers\n\nScript terminated...";
 	sendEmail(subject => $subject, message => $message);
-	exit 1;
+	if ($dataPlistSourceIsDir) {
+		next;
+	} else {
+		exit 1;
+	}
 }
 
 # Die if the modification date isn't set
@@ -756,13 +816,19 @@ if ($modifiedDate eq "") {
 	$subject = $subjectPrefix . " ERROR: $name - Modification Date not found";
 	$message = "Modification date of download not found, indicating a problem.\n\nThe URL $url returned the following headers\n$headers. Script terminated...";
 	sendEmail(subject => $subject, message => $message);
-	exit 1;
+	if ($dataPlistSourceIsDir) {
+		next;
+	} else {
+		exit 1;
+	}
 }
 
 # If just resetting the modified date, bail at this stage
 if ($reset) {
 	updateLastModifiedDate($modifiedDate);
-	exit 0;
+	if ($dataPlistSourceIsDir) {
+		next;
+	} 
 }
 
 # Compare latest modification date to what we have already packaged
@@ -781,7 +847,7 @@ if (!$downloadOnly) {
 	if ($modDateAsTimestamp <= $currentPackagedVersionAsTimestamp) {
 		logMessage("stdout, log", "No new version of $name found. Exiting...", $logFile);
 		if (! $ignoreModDate) {
-			exit 0;
+			next;
 		}
 	} else {
 		logMessage("stdout, log", "New version of $name found...", $logFile);
@@ -820,7 +886,7 @@ if ($downloadOnly) {
 	$message = "Download Only option was selected. File saved to: \"$tmpLocation\". Exiting...";
 	logMessage("log", $message, $logFile);
 	print $message . "\n";
-	exit 0;
+	next;
 }
 
 ###############################################################################
@@ -862,7 +928,11 @@ if ($downloadFileName =~ /.zip$/) {
 		$subject = $subjectPrefix . " ERROR: $name - Can't mount disk image.";
 		$message = "Can't read the plist that hdiutil generates when attempting to mount the disk image. The disk image downloaded from $url is most likely corrupt. Script terminated...\n\n";
 		sendEmail(subject => $subject, message => $message);		
-		exit 1;
+		if ($dataPlistSourceIsDir) {
+			next;
+		} else {
+			exit 1;
+		}
 	}
 
 	my @pathToMountPointKey = pathsThatMatchPartialPathWithGrep($hdiutilPlist, "system-entities", "*", "mount-point");
@@ -872,7 +942,11 @@ if ($downloadFileName =~ /.zip$/) {
 		$subject = $subjectPrefix . " ERROR: $name - Can't determine mount point of DMG";
 		$message = "Can't determine the mount point of the disk image downloaded from $url. Script terminated...";
 		sendEmail(subject => $subject, message => $message);
-		exit 1;
+		if ($dataPlistSourceIsDir) {
+			next;
+		} else {
+			exit 1;
+		}
 	}
 
 	# Get the mount point using the previously found path.
@@ -901,7 +975,11 @@ if ($downloadFileName =~ /.zip$/) {
 	$subject = $subjectPrefix . " ERROR: $name - Download is in an unknown format";
 	$message = "Download is in an unknown format ($downloadFileName). Script terminated...";
 	sendEmail(subject => $subject, message => $message);
-	exit 1;
+	if ($dataPlistSourceIsDir) {
+		next;
+	} else {
+		exit 1;
+	}
 }
 
 # Check that the target file to import actually exists (sanity check the about if)
@@ -912,7 +990,11 @@ if (! -e "$target") {
 	$subject = $subjectPrefix . " ERROR: $name - Can't find downloaded file to import into Munki";
 	$message = "Can't find item to import into Munki. Script terminated...\n\n$name looked for $itemToImport\n";
 	sendEmail(subject => $subject, message => $message);
-	exit 1;
+	if ($dataPlistSourceIsDir) {
+		next;
+	} else {
+		exit 1;
+	}
 }
 
 logMessage("stdout, log", "Item extracted to $target...", $logFile);
@@ -960,7 +1042,11 @@ if ( ! defined($pkgInfoPlist)) {
 	$subject = $subjectPrefix . " ERROR: $name - Import to Munki Failed";
 	$message = "The Pkginfo plist can't be read. The import to Munki failed.\n";
 	sendEmail(subject => $subject, message => $message);
-	exit 1;
+	if ($dataPlistSourceIsDir) {
+		next;
+	} else {
+		exit 1;
+	}
 } else {
 		# Add or override Munki's default keys with ones in our data plist
 	my %keysHash = perlHashFromNSDict(getPlistObject($dataPlist));
@@ -1012,6 +1098,8 @@ if ($makecatalogs) {
 }
 
 logMessage("stdout, log", "Finished...", $logFile);
+
+}
 
 exit 0;
 
