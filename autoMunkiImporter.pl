@@ -73,9 +73,9 @@ my $maxNoOfLogsToKeep   = 5;
 
 # Email - emailReports, From and To addresses can be overwritten by the data plist
 my $emailReports  = 1; # 1 = True, 0 = False;
-my $smtpServer    = "smtphost.anu.edu.au";
-my $fromAddress   = 'noreply@anu.edu.au'; 
-my $toAddress     = 'adam.reed@anu.edu.au';
+my $smtpServer    = "REPLACE_ME";
+my $fromAddress   = 'REPLACE_ME@example.com'; 
+my $toAddress     = 'REPLACE_ME@example.com';
 my $subjectPrefix = "[Auto Munki Import]";
 
 # Make Catalogs? - Can be overwritten by the data plist
