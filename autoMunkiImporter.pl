@@ -428,11 +428,25 @@ sub findDownloadLinkOnPage {
 	# Download the page, using our provided user agent
 	my $mech = WWW::Mechanize->new();
 	$mech->agent($userAgent);
-	$mech->get($url);
+	eval { $mech->get($url); };
+	if ($@) {
+		logMessage("stderr, log", "ERROR: Can't download content of URL. Error was: $@", $logFile);
+		$subject = $subjectPrefix . " ERROR: $name - Can't download content of URL";
+		$message = "Can't download content of URL. Error returned was:-\n$@\nScript terminated...";
+		sendEmail(subject => $subject, message => $message);
+		if ($dataPlistSourceIsDir) {
+			return undef;
+		} else {
+			exit 1;
+		}		
+	}
 	
 	# Find the link
 	my $downloadLinkRegex = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "downloadLinkRegex"));
 	$foundLink = findURL($url, $mech, $downloadLinkRegex);
+	if (!defined($foundLink)) {
+		return undef;
+	}
 	
 	# URL can have spaces, so encode them
 	$foundLink = escapeURL($foundLink);
@@ -450,15 +464,23 @@ sub findDownloadLinkOnPage {
 		# Link is to a second web page, so find the real link
 
 		# Get new page	
-		$mech->get($foundLink);
+		eval { $mech->get($foundLink); };
+		if ($@) {
+			if (!defined($foundLink)) {
+				return undef;
+			}
+		}
 		
 		# Find the link
 		my $secondLinkRegex = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "secondLinkRegex"));
 		$foundLink = findURL($url, $mech, $secondLinkRegex);
+
+		# Ensure there aren't any additional redirects
+		$url = findFinalURLAfterRedirects($foundLink);
+		# URL can have spaces, so encode them
+		$foundLink = escapeURL($foundLink);
 	}
 
-	# Ensure there aren't any additional redirects
-	$url = findFinalURLAfterRedirects($foundLink);
 	return $url;
 }
 
