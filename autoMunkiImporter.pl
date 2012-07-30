@@ -67,7 +67,7 @@ $tools{'yes'} = "/usr/bin/yes";
 $tools{'plutil'} = "/usr/bin/plutil";
 
 # Logs - logFile can be overwritten by the data plist
-my $logFile             = "~/Library/Logs/autoMunkiImporter.log";
+my $logFile             = "/Library/Logs/autoMunkiImporter/autoMunkiImporter.log";
 my $logFileMaxSizeInMBs = 1;
 my $maxNoOfLogsToKeep   = 5;
 
