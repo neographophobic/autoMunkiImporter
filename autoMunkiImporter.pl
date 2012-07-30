@@ -656,6 +656,8 @@ sub hackAroundLicenceAgreementsInDiskImages {
 
 sub getDataPlists {
 	my ($path) = @_;
+	$path = expandFilePath($path);
+	$path =~ s/ /\\ /g;
 	my @dirContents = <$path/*>;
 	my $item;
 	foreach $item (@dirContents) {
