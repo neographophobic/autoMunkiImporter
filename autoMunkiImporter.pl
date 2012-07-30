@@ -1111,10 +1111,10 @@ autoMunkiImporter - Automatically import apps into Munki
 
 =head1 SYNOPSIS
 
-autoMunkiImporter.pl --data /path/to/data.plist [options]
+autoMunkiImporter.pl --data /path/to/data[.plist] [options]
 
  Options:
-	--data /path/to/data.plist		Path to the data plist (required)
+	--data /path/to/data[.plist]		Path to the data plist or directory containing data plists (required)
 	--download 				Only download the file (doesn't import into Munki)
 	--help | -?				Show this help text
 	--ignoreModDate				Ignore the modified date and version info from the data plist
@@ -1129,10 +1129,10 @@ autoMunkiImporter.pl --data /path/to/data.plist [options]
 
 =over 8
 
-=item B<--data> /path/to/data.plist
+=item B<--data> /path/to/data[.plist]
 
-Path to the data plist (required). The data plist contains the specific configuring this script to 
-download a particular app. 
+Path to the data plist, or a directory containing data plists (required). The data plist contains 
+the specific configuring this script to download a particular app. 
 
 See B<DATA PLIST> for structure of the plist.
 
