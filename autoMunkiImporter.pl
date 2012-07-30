@@ -691,256 +691,74 @@ if (-d $dataPlistPath) {
 	$dataPlistSourceIsDir = 0;
 }
 
+# Loop through each of the data plists that have been found and process them
 foreach $dataPlistPath (@dataPlists) {
-# Read the data plist, which contains config for this script
-$dataPlist = readDataPlist($dataPlistPath);
-
-# Get product name
-my $name = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "name"));
-# Get optional Log File name (overwriting the one in this script)
-eval { $logFile = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "logFile")); };
-
-# Prepare the log for use
-$logFile = expandFilePath($logFile);
-prepareLog($logFile);
-logMessage("stdout, log", "App Name: $name", $logFile);
-logMessage("stdout, log", "Processing Type: $type", $logFile);
-
-# Check for optional disabled key
-my $disabled = 0; # False
-eval { $disabled = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "disabled")); };
-if ($disabled) {
-	logMessage("stdout, log", "Automatic Update Check is DISABLED. Exiting...", $logFile);
-	if ($dataPlistSourceIsDir) {
-		next;
-	} 
-}
-
-# Show basic progress info
-if ($progress) {
-	print "App Name: $name\n";
-}
-
-
-###############################################################################
-# Main App - Step 1: Get the URL for the download
-###############################################################################
-
-my $url = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "URLToMonitor"));
-if ($url eq "") {
-	logMessage("stderr, log", "ERROR: URL is missing. Exiting...", $logFile);
-	if ($dataPlistSourceIsDir) {
-		next;
-	} else {
-		exit 1;
-	}
-}
-
-# Replace the XML encoding of &
-$url =~ s/&amp;/&/g;
-
-logMessage("stdout, log", "Initial URL: $url", $logFile);
-
-# Some sites will return different content based off the user agent
-# Optionally overwrite the default user agent if present in the plist
-eval { $userAgent = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "userAgent")); };
-logMessage("stdout, log", "Determining Final URL...", $logFile);
-
-if ($type eq "static") {
-	$url = findFinalURLAfterRedirects($url);
-} elsif ($type eq "dynamic") {
-	$url = findDownloadLinkOnPage($url, $dataPlist);
-} elsif ($type eq "sparkle") {
-	$url = findDownloadLinkFromSparkleFeed($url);
-}
-
-if (! defined $url || $url eq "") {
-	logMessage("stderr, log", "ERROR: Can't determine final URL", $logFile);
-	$subject = $subjectPrefix . " ERROR: $name - Can't determine final URL";
-	$message = "Can't determine final URL. Script terminated...";
-	sendEmail(subject => $subject, message => $message);
-	if ($dataPlistSourceIsDir) {
-		next;
-	} else {
-		exit 1;
-	}
-}
-
-logMessage("stdout, log", "Final URL: $url", $logFile);
-
-###############################################################################
-# Main App - Step 2: Determine if file has changed since we last processed it
-###############################################################################
-
-logMessage("stdout, log", "Determine if file has changed since we last processed it...", $logFile);
-# Get headers for download
-my $headers = `$tools{'curl'} --head --user-agent \"$userAgent\" \"$url\" 2>&1`;
-# Convert line endings to \n, and split the headers into lines
-$headers =~ s/\r/\n/gi;
-my @headers = split /\n/, $headers;
-
-# Search for the Last-Modified date, and ensure that we are getting a HTTP 200 Status Code
-my $modifiedDate = "";
-my $httpCode = 0;
-foreach my $line (@headers) {
-	# Flag if we find a HTTP Status Code of 200
-	if ($line =~ /HTTP\/\d.\d 200 OK/i) {
-		$httpCode = 1;	
-	}
-
-	# Get the last modified date
-	if ($line =~ /Last-Modified/i) {
-		# The Last-Modified header may not be on a new line, so find where it starts
-		# on the line, then take the rest of the line after it as the mod date
-		my $lastModifiedPosition = index($line, "Last-Modified");
-		$modifiedDate = substr($line, $lastModifiedPosition + 15);
-	}
-}
-
-# Die if the HTTP Status code isn't 200 - success
-if (! $httpCode && $url =~ /^http/) {
-	logMessage("stderr, log", "ERROR: Problem accessing file to download. The error and / or headers were\n$headers", $logFile);
-	$subject = $subjectPrefix . " ERROR: $name - Problem accessing file to download";
-	$message = "There was a problem accessing the file to download. The URL $url returned the following error and / or headers:-\n$headers\n\nScript terminated...";
-	sendEmail(subject => $subject, message => $message);
-	if ($dataPlistSourceIsDir) {
-		next;
-	} else {
-		exit 1;
-	}
-}
-
-# Die if the modification date isn't set
-if ($modifiedDate eq "") {
-	logMessage("stderr, log", "ERROR: Modification date of download not found. The headers were\n$headers", $logFile);
-	$subject = $subjectPrefix . " ERROR: $name - Modification Date not found";
-	$message = "Modification date of download not found, indicating a problem.\n\nThe URL $url returned the following headers\n$headers. Script terminated...";
-	sendEmail(subject => $subject, message => $message);
-	if ($dataPlistSourceIsDir) {
-		next;
-	} else {
-		exit 1;
-	}
-}
-
-# If just resetting the modified date, bail at this stage
-if ($reset) {
-	updateLastModifiedDate($modifiedDate);
-	if ($dataPlistSourceIsDir) {
-		next;
-	} 
-}
-
-# Compare latest modification date to what we have already packaged
-my $currentPackagedVersion = "";
-my $currentPackagedVersionAsTimestamp = 0;
-if (!$downloadOnly) {
-	eval { $currentPackagedVersion = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "modifiedDate")); };
-	my $modDateAsTimestamp = str2time($modifiedDate);
-	if ($currentPackagedVersion ne "") {
-		$currentPackagedVersionAsTimestamp = str2time($currentPackagedVersion);
-	}
+	# Read the data plist, which contains config for this script
+	$dataPlist = readDataPlist($dataPlistPath);
 	
-	logMessage("stdout, log", "Modification Date of Download:                     $modifiedDate ($modDateAsTimestamp)", $logFile);
-	logMessage("stdout, log", "Modification Date of Previously Packaged Download: $currentPackagedVersion ($currentPackagedVersionAsTimestamp)", $logFile);
-
-	if ($modDateAsTimestamp <= $currentPackagedVersionAsTimestamp) {
-		logMessage("stdout, log", "No new version of $name found. Exiting...", $logFile);
-		if (! $ignoreModDate) {
+	# Get product name
+	my $name = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "name"));
+	# Get optional Log File name (overwriting the one in this script)
+	eval { $logFile = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "logFile")); };
+	
+	# Prepare the log for use
+	$logFile = expandFilePath($logFile);
+	prepareLog($logFile);
+	logMessage("stdout, log", "App Name: $name", $logFile);
+	logMessage("stdout, log", "Processing Type: $type", $logFile);
+	
+	# Check for optional disabled key
+	my $disabled = 0; # False
+	eval { $disabled = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "disabled")); };
+	if ($disabled) {
+		logMessage("stdout, log", "Automatic Update Check is DISABLED. Exiting...", $logFile);
+		if ($dataPlistSourceIsDir) {
 			next;
-		}
-	} else {
-		logMessage("stdout, log", "New version of $name found...", $logFile);
-	}	
-}
-
-###############################################################################
-# Main App - Step 3: Download the new version of the app
-###############################################################################
-
-my $tmpDIR = File::Temp->newdir();
-my $downloadFileName = addTrailingSlash($tmpDIR) . basename($url);
-logMessage("stdout, log", "Starting download of Final URL to $downloadFileName...", $logFile);
-
-# Show basic progress info
-if ($progress) {
-	print "Downloading: $url\n         to: $downloadFileName\n\n";
-}
-
-# Show progress if in verbose or progress modes
-my $progressOuptutLocation = "";
-if (! $verbose && ! $progress) {
-	$progressOuptutLocation = "2>/dev/null";
-}
-
-system("$tools{'curl'} -o \"$downloadFileName\" \"$url\" $progressOuptutLocation");
-logMessage("stdout, log", "Download complete...", $logFile);
-
-
-# If download only is set, copy the downloaded file to /tmp and quit
-if ($downloadOnly) {
-	# Copy to user defined spot
-	my $tmpLocation = "/private/tmp/" . basename($downloadFileName);
-	system ("$tools{'cp'} -r \"$downloadFileName\" \"$tmpLocation\"");
-
-	$message = "Download Only option was selected. File saved to: \"$tmpLocation\". Exiting...";
-	logMessage("log", $message, $logFile);
-	print $message . "\n";
-	next;
-}
-
-###############################################################################
-# Main App - Step 4: Prep for Import into Munki
-###############################################################################
-
-# Extract files or mount disk image, and determine where the actual item we are
-# after ended up. This will return an .app or .pkg for Munki to import, 
-# regardless of the download format.
-
-# This is the step where you would do any prep work on a download before
-# it's imported into Munki. Basically just ensure that $target has the full path
-# to the item to import by the end.
-
-logMessage("stdout, log", "Extracting download and finding item we wish to import...", $logFile);
-my $target = "";
-my $itemToImport = perlValue(getPlistObject($dataPlist, "autoMunkiImporter",  "itemToImport"));
-if ($downloadFileName =~ /.zip$/) {
-	# ZIP File
-	system("$tools{'ditto'} -xk \"$downloadFileName\" \"$tmpDIR\"");
-	$target = `$tools{'find'} \"$tmpDIR\" -iname \"$itemToImport\" -print 2>/dev/null`;
-} elsif ($downloadFileName =~ /.tar$/ || $downloadFileName =~ /.tar.gz$/ || $downloadFileName =~ /.tgz$/ || $downloadFileName =~ /.tbz/) {
-	# TAR and friends file
-	system("$tools{'tar'} -xf \"$downloadFileName\" -C \"$tmpDIR\"");
-	$target = `$tools{'find'} \"$tmpDIR\" -iname \"$itemToImport\" -print 2>/dev/null`;
-} elsif ($downloadFileName =~ /.dmg$/ || $downloadFileName =~ /.iso$/) {
-	# Disk Image
+		} 
+	}
 	
-	# Mount Disk Image
-	my $hdiutilPlistPath = $downloadFileName . ".plist";
-	system("$tools{'yes'} | $tools{'hdiutil'} attach -mountrandom /tmp -plist -nobrowse \"$downloadFileName\" &> \"$hdiutilPlistPath\"");
-
-	# Find the path to the Mount Point in the plist returned by hdiutil
-	hackAroundLicenceAgreementsInDiskImages($hdiutilPlistPath);
-	my $hdiutilPlist = loadDefaults($hdiutilPlistPath);
-	if (! defined($hdiutilPlist) ) {
-		# Error reading the Plist. Display an error and exit
-		logMessage("stderr, log","ERROR: Can't mount disk image. Exiting...\n", $logFile);
-		$subject = $subjectPrefix . " ERROR: $name - Can't mount disk image.";
-		$message = "Can't read the plist that hdiutil generates when attempting to mount the disk image. The disk image downloaded from $url is most likely corrupt. Script terminated...\n\n";
-		sendEmail(subject => $subject, message => $message);		
+	# Show basic progress info
+	if ($progress) {
+		print "App Name: $name\n";
+	}
+	
+	
+	###############################################################################
+	# Main App - Step 1: Get the URL for the download
+	###############################################################################
+	
+	my $url = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "URLToMonitor"));
+	if ($url eq "") {
+		logMessage("stderr, log", "ERROR: URL is missing. Exiting...", $logFile);
 		if ($dataPlistSourceIsDir) {
 			next;
 		} else {
 			exit 1;
 		}
 	}
-
-	my @pathToMountPointKey = pathsThatMatchPartialPathWithGrep($hdiutilPlist, "system-entities", "*", "mount-point");
-	if ( ! defined($hdiutilPlist) || $#pathToMountPointKey < 0) {
-		# Error reading the Plist. Display an error and exit
-		logMessage("stderr, log","ERROR: Can't determine mount point of DMG. Exiting...\n", $logFile);
-		$subject = $subjectPrefix . " ERROR: $name - Can't determine mount point of DMG";
-		$message = "Can't determine the mount point of the disk image downloaded from $url. Script terminated...";
+	
+	# Replace the XML encoding of &
+	$url =~ s/&amp;/&/g;
+	
+	logMessage("stdout, log", "Initial URL: $url", $logFile);
+	
+	# Some sites will return different content based off the user agent
+	# Optionally overwrite the default user agent if present in the plist
+	eval { $userAgent = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "userAgent")); };
+	logMessage("stdout, log", "Determining Final URL...", $logFile);
+	
+	if ($type eq "static") {
+		$url = findFinalURLAfterRedirects($url);
+	} elsif ($type eq "dynamic") {
+		$url = findDownloadLinkOnPage($url, $dataPlist);
+	} elsif ($type eq "sparkle") {
+		$url = findDownloadLinkFromSparkleFeed($url);
+	}
+	
+	if (! defined $url || $url eq "") {
+		logMessage("stderr, log", "ERROR: Can't determine final URL", $logFile);
+		$subject = $subjectPrefix . " ERROR: $name - Can't determine final URL";
+		$message = "Can't determine final URL. Script terminated...";
 		sendEmail(subject => $subject, message => $message);
 		if ($dataPlistSourceIsDir) {
 			next;
@@ -948,157 +766,339 @@ if ($downloadFileName =~ /.zip$/) {
 			exit 1;
 		}
 	}
-
-	# Get the mount point using the previously found path.
-	my $mountPoint = perlValue(getPlistObject($hdiutilPlist, "system-entities", ${$pathToMountPointKey[0]}[1], "mount-point"));
-	logMessage("stdout, log", "Disk image mounted at $mountPoint...", $logFile);
-
-	# Find and copy item from disk image
-	$target = `$tools{'find'} \"$mountPoint\" -iname \"$itemToImport\" -print 2>/dev/null`;
-	if ($target ne "") {
-		# Item was found, so copy it out of the disk image
-		chomp($target);
-		my $dest = addTrailingSlash($tmpDIR) . basename($target);
-		system ("$tools{'cp'} -r \"$target\" \"$dest\"");
-		logMessage("stdout, log", "Copying item \"$target\" to \"$dest\"", $logFile);
-		$target = $dest;
-	}
 	
-	# Unmount and Detach Disk Image
-	system("$tools{'hdiutil'} detach $mountPoint > /dev/null");		
-} elsif ($downloadFileName =~ /.pkg$/ || $downloadFileName =~ /.mpkg$/) {
-	# Flat package, so no prep is required
-	$target = $downloadFileName;
-} else {
-	# Download is in an unknown format.
-	logMessage("stderr, log","ERROR: Download is in an unknown format. Exiting...\n", $logFile);
-	$subject = $subjectPrefix . " ERROR: $name - Download is in an unknown format";
-	$message = "Download is in an unknown format ($downloadFileName). Script terminated...";
-	sendEmail(subject => $subject, message => $message);
-	if ($dataPlistSourceIsDir) {
-		next;
-	} else {
-		exit 1;
-	}
-}
-
-# Check that the target file to import actually exists (sanity check the about if)
-chomp($target);
-if (! -e "$target") {
-	# Can't find downloaded file to import into Munki.
-	logMessage("stderr, log","ERROR: Can't find item ($itemToImport) to import into Munki. Exiting...\n", $logFile);
-	$subject = $subjectPrefix . " ERROR: $name - Can't find downloaded file to import into Munki";
-	$message = "Can't find item to import into Munki. Script terminated...\n\n$name looked for $itemToImport\n";
-	sendEmail(subject => $subject, message => $message);
-	if ($dataPlistSourceIsDir) {
-		next;
-	} else {
-		exit 1;
-	}
-}
-
-logMessage("stdout, log", "Item extracted to $target...", $logFile);
-
-
-###############################################################################
-# Main App - Step 5: Import into Munki
-###############################################################################
-
-logMessage("stdout, log", "Importing app into Munki...", $logFile);
-# Show basic progress info
-if ($progress) {
-	print "Importing app into Munki...\n";
-}
-
-# Get optional command line options for Munki Import
-my $munkiimportOptions = "";
-eval { $munkiimportOptions = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "munkiimportOptions")); };
-if ($munkiimportOptions ne "") {
-	logMessage("stdout, log", "Munki Import command line options: --nointeractive --name \"$name\" $munkiimportOptions", $logFile);
-}
-# Import into Munki
-my $munkiOutput = `$tools{'munkiimport'} --nointeractive --name "$name" $munkiimportOptions \"$target\" | $tools{'grep'} pkgsinfo`;
-
-# Get the PkgInfo File for the package we just imported
-my $pkgInfoPlistPath = $munkiOutput;
-$pkgInfoPlistPath =~ m/\/(.*)?/gi;
-$pkgInfoPlistPath = substr($&, 0, -3);
-logMessage("stdout, log", "PkgInfo File: $pkgInfoPlistPath...", $logFile);
-
-logMessage("stdout, log", "Imported app into Munki...", $logFile);
-
-###############################################################################
-# Main App - Step 6: Update PkgInfo and Data Plists
-###############################################################################
-
-logMessage("stdout, log", "Updating Pkginfo...", $logFile);
-
-# Read Pkginfo file
-my $packagedVersion = "";
-my $pkgInfoPlist = loadDefaults( $pkgInfoPlistPath );
-if ( ! defined($pkgInfoPlist)) {
-	# Error reading the Plist. Display an error and skip items that relied on it
-	logMessage("stderr, log", "ERROR: The Pkginfo plist can't be read. The import to Munki failed....", $logFile);
-	$subject = $subjectPrefix . " ERROR: $name - Import to Munki Failed";
-	$message = "The Pkginfo plist can't be read. The import to Munki failed.\n";
-	sendEmail(subject => $subject, message => $message);
-	if ($dataPlistSourceIsDir) {
-		next;
-	} else {
-		exit 1;
-	}
-} else {
-		# Add or override Munki's default keys with ones in our data plist
-	my %keysHash = perlHashFromNSDict(getPlistObject($dataPlist));
-	foreach my $key (sort(keys %keysHash)) {
-		# Remove any of the existing keys
-		if ($key ne "autoMunkiImporter") {
-			logMessage("stdout, log", "Overriding Pkginfo key: $key", $logFile);
+	logMessage("stdout, log", "Final URL: $url", $logFile);
+	
+	###############################################################################
+	# Main App - Step 2: Determine if file has changed since we last processed it
+	###############################################################################
+	
+	logMessage("stdout, log", "Determine if file has changed since we last processed it...", $logFile);
+	# Get headers for download
+	my $headers = `$tools{'curl'} --head --user-agent \"$userAgent\" \"$url\" 2>&1`;
+	# Convert line endings to \n, and split the headers into lines
+	$headers =~ s/\r/\n/gi;
+	my @headers = split /\n/, $headers;
+	
+	# Search for the Last-Modified date, and ensure that we are getting a HTTP 200 Status Code
+	my $modifiedDate = "";
+	my $httpCode = 0;
+	foreach my $line (@headers) {
+		# Flag if we find a HTTP Status Code of 200
+		if ($line =~ /HTTP\/\d.\d 200 OK/i) {
+			$httpCode = 1;	
 		}
-		removePlistObject($pkgInfoPlist, $key);
+	
+		# Get the last modified date
+		if ($line =~ /Last-Modified/i) {
+			# The Last-Modified header may not be on a new line, so find where it starts
+			# on the line, then take the rest of the line after it as the mod date
+			my $lastModifiedPosition = index($line, "Last-Modified");
+			$modifiedDate = substr($line, $lastModifiedPosition + 15);
+		}
 	}
 	
-	# Add the keys from our data plist
-	my $combinedPlist = combineObjects($pkgInfoPlist, $dataPlist);
+	# Die if the HTTP Status code isn't 200 - success
+	if (! $httpCode && $url =~ /^http/) {
+		logMessage("stderr, log", "ERROR: Problem accessing file to download. The error and / or headers were\n$headers", $logFile);
+		$subject = $subjectPrefix . " ERROR: $name - Problem accessing file to download";
+		$message = "There was a problem accessing the file to download. The URL $url returned the following error and / or headers:-\n$headers\n\nScript terminated...";
+		sendEmail(subject => $subject, message => $message);
+		if ($dataPlistSourceIsDir) {
+			next;
+		} else {
+			exit 1;
+		}
+	}
 	
-	# Remove the keys specific to this script and not Munki
-	removePlistObject($combinedPlist, "autoMunkiImporter");
-
-	# Save the PkgInfo
-	saveDefaults($combinedPlist, $pkgInfoPlistPath);
-
-	# Save a copy of the version into the data plist
-	$packagedVersion = perlValue(getPlistObject($pkgInfoPlist, "version"));
-	setPlistObject($dataPlist, "autoMunkiImporter", "corrospoindingVersion", $packagedVersion);
-	saveDefaults($dataPlist, $dataPlistPath);
-}
-
-# Update packaged modification date in data plist, so that we don't attempt to repackage this version
-updateLastModifiedDate($modifiedDate);
-
-logMessage("stdout, log", "Pkginfo Updated...", $logFile);
-logMessage("stdout, log", "$name version $packagedVersion was imported into Munki. Please test the app to ensure it functions correctly before enabling for any non Dev / Test users.", $logFile);
-
-###############################################################################
-# Main App - Step 7: Notify Package has been imported
-###############################################################################
-
-$subject = $subjectPrefix . " " . $name . " (v" . $packagedVersion . ") has been imported";
-$message = $name . " (v" . $packagedVersion . ") has been imported into Munki.\n\nIt's pkginfo file is at $pkgInfoPlistPath.";
-sendEmail(subject => $subject, message => $message);
-
-###############################################################################
-# Main App - Step 8: Optionally run makecatalogs
-###############################################################################
-
-eval { $makecatalogs = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "makecatalogs")); };
-if ($makecatalogs) {
-	logMessage("stdout, log", "Rebuilding catalogs...", $logFile);
-	system("$tools{'makecatalogs'} > /dev/null");
-}
-
-logMessage("stdout, log", "Finished...", $logFile);
-
+	# Die if the modification date isn't set
+	if ($modifiedDate eq "") {
+		logMessage("stderr, log", "ERROR: Modification date of download not found. The headers were\n$headers", $logFile);
+		$subject = $subjectPrefix . " ERROR: $name - Modification Date not found";
+		$message = "Modification date of download not found, indicating a problem.\n\nThe URL $url returned the following headers\n$headers. Script terminated...";
+		sendEmail(subject => $subject, message => $message);
+		if ($dataPlistSourceIsDir) {
+			next;
+		} else {
+			exit 1;
+		}
+	}
+	
+	# If just resetting the modified date, bail at this stage
+	if ($reset) {
+		updateLastModifiedDate($modifiedDate);
+		if ($dataPlistSourceIsDir) {
+			next;
+		} 
+	}
+	
+	# Compare latest modification date to what we have already packaged
+	my $currentPackagedVersion = "";
+	my $currentPackagedVersionAsTimestamp = 0;
+	if (!$downloadOnly) {
+		eval { $currentPackagedVersion = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "modifiedDate")); };
+		my $modDateAsTimestamp = str2time($modifiedDate);
+		if ($currentPackagedVersion ne "") {
+			$currentPackagedVersionAsTimestamp = str2time($currentPackagedVersion);
+		}
+		
+		logMessage("stdout, log", "Modification Date of Download:                     $modifiedDate ($modDateAsTimestamp)", $logFile);
+		logMessage("stdout, log", "Modification Date of Previously Packaged Download: $currentPackagedVersion ($currentPackagedVersionAsTimestamp)", $logFile);
+	
+		if ($modDateAsTimestamp <= $currentPackagedVersionAsTimestamp) {
+			logMessage("stdout, log", "No new version of $name found. Exiting...", $logFile);
+			if (! $ignoreModDate) {
+				next;
+			}
+		} else {
+			logMessage("stdout, log", "New version of $name found...", $logFile);
+		}	
+	}
+	
+	###############################################################################
+	# Main App - Step 3: Download the new version of the app
+	###############################################################################
+	
+	my $tmpDIR = File::Temp->newdir();
+	my $downloadFileName = addTrailingSlash($tmpDIR) . basename($url);
+	logMessage("stdout, log", "Starting download of Final URL to $downloadFileName...", $logFile);
+	
+	# Show basic progress info
+	if ($progress) {
+		print "Downloading: $url\n         to: $downloadFileName\n\n";
+	}
+	
+	# Show progress if in verbose or progress modes
+	my $progressOuptutLocation = "";
+	if (! $verbose && ! $progress) {
+		$progressOuptutLocation = "2>/dev/null";
+	}
+	
+	system("$tools{'curl'} -o \"$downloadFileName\" \"$url\" $progressOuptutLocation");
+	logMessage("stdout, log", "Download complete...", $logFile);
+	
+	
+	# If download only is set, copy the downloaded file to /tmp and quit
+	if ($downloadOnly) {
+		# Copy to user defined spot
+		my $tmpLocation = "/private/tmp/" . basename($downloadFileName);
+		system ("$tools{'cp'} -r \"$downloadFileName\" \"$tmpLocation\"");
+	
+		$message = "Download Only option was selected. File saved to: \"$tmpLocation\". Exiting...";
+		logMessage("log", $message, $logFile);
+		print $message . "\n";
+		next;
+	}
+	
+	###############################################################################
+	# Main App - Step 4: Prep for Import into Munki
+	###############################################################################
+	
+	# Extract files or mount disk image, and determine where the actual item we are
+	# after ended up. This will return an .app or .pkg for Munki to import, 
+	# regardless of the download format.
+	
+	# This is the step where you would do any prep work on a download before
+	# it's imported into Munki. Basically just ensure that $target has the full path
+	# to the item to import by the end.
+	
+	logMessage("stdout, log", "Extracting download and finding item we wish to import...", $logFile);
+	my $target = "";
+	my $itemToImport = perlValue(getPlistObject($dataPlist, "autoMunkiImporter",  "itemToImport"));
+	if ($downloadFileName =~ /.zip$/) {
+		# ZIP File
+		system("$tools{'ditto'} -xk \"$downloadFileName\" \"$tmpDIR\"");
+		$target = `$tools{'find'} \"$tmpDIR\" -iname \"$itemToImport\" -print 2>/dev/null`;
+	} elsif ($downloadFileName =~ /.tar$/ || $downloadFileName =~ /.tar.gz$/ || $downloadFileName =~ /.tgz$/ || $downloadFileName =~ /.tbz/) {
+		# TAR and friends file
+		system("$tools{'tar'} -xf \"$downloadFileName\" -C \"$tmpDIR\"");
+		$target = `$tools{'find'} \"$tmpDIR\" -iname \"$itemToImport\" -print 2>/dev/null`;
+	} elsif ($downloadFileName =~ /.dmg$/ || $downloadFileName =~ /.iso$/) {
+		# Disk Image
+		
+		# Mount Disk Image
+		my $hdiutilPlistPath = $downloadFileName . ".plist";
+		system("$tools{'yes'} | $tools{'hdiutil'} attach -mountrandom /tmp -plist -nobrowse \"$downloadFileName\" &> \"$hdiutilPlistPath\"");
+	
+		# Find the path to the Mount Point in the plist returned by hdiutil
+		hackAroundLicenceAgreementsInDiskImages($hdiutilPlistPath);
+		my $hdiutilPlist = loadDefaults($hdiutilPlistPath);
+		if (! defined($hdiutilPlist) ) {
+			# Error reading the Plist. Display an error and exit
+			logMessage("stderr, log","ERROR: Can't mount disk image. Exiting...\n", $logFile);
+			$subject = $subjectPrefix . " ERROR: $name - Can't mount disk image.";
+			$message = "Can't read the plist that hdiutil generates when attempting to mount the disk image. The disk image downloaded from $url is most likely corrupt. Script terminated...\n\n";
+			sendEmail(subject => $subject, message => $message);		
+			if ($dataPlistSourceIsDir) {
+				next;
+			} else {
+				exit 1;
+			}
+		}
+	
+		my @pathToMountPointKey = pathsThatMatchPartialPathWithGrep($hdiutilPlist, "system-entities", "*", "mount-point");
+		if ( ! defined($hdiutilPlist) || $#pathToMountPointKey < 0) {
+			# Error reading the Plist. Display an error and exit
+			logMessage("stderr, log","ERROR: Can't determine mount point of DMG. Exiting...\n", $logFile);
+			$subject = $subjectPrefix . " ERROR: $name - Can't determine mount point of DMG";
+			$message = "Can't determine the mount point of the disk image downloaded from $url. Script terminated...";
+			sendEmail(subject => $subject, message => $message);
+			if ($dataPlistSourceIsDir) {
+				next;
+			} else {
+				exit 1;
+			}
+		}
+	
+		# Get the mount point using the previously found path.
+		my $mountPoint = perlValue(getPlistObject($hdiutilPlist, "system-entities", ${$pathToMountPointKey[0]}[1], "mount-point"));
+		logMessage("stdout, log", "Disk image mounted at $mountPoint...", $logFile);
+	
+		# Find and copy item from disk image
+		$target = `$tools{'find'} \"$mountPoint\" -iname \"$itemToImport\" -print 2>/dev/null`;
+		if ($target ne "") {
+			# Item was found, so copy it out of the disk image
+			chomp($target);
+			my $dest = addTrailingSlash($tmpDIR) . basename($target);
+			system ("$tools{'cp'} -r \"$target\" \"$dest\"");
+			logMessage("stdout, log", "Copying item \"$target\" to \"$dest\"", $logFile);
+			$target = $dest;
+		}
+		
+		# Unmount and Detach Disk Image
+		system("$tools{'hdiutil'} detach $mountPoint > /dev/null");		
+	} elsif ($downloadFileName =~ /.pkg$/ || $downloadFileName =~ /.mpkg$/) {
+		# Flat package, so no prep is required
+		$target = $downloadFileName;
+	} else {
+		# Download is in an unknown format.
+		logMessage("stderr, log","ERROR: Download is in an unknown format. Exiting...\n", $logFile);
+		$subject = $subjectPrefix . " ERROR: $name - Download is in an unknown format";
+		$message = "Download is in an unknown format ($downloadFileName). Script terminated...";
+		sendEmail(subject => $subject, message => $message);
+		if ($dataPlistSourceIsDir) {
+			next;
+		} else {
+			exit 1;
+		}
+	}
+	
+	# Check that the target file to import actually exists (sanity check the about if)
+	chomp($target);
+	if (! -e "$target") {
+		# Can't find downloaded file to import into Munki.
+		logMessage("stderr, log","ERROR: Can't find item ($itemToImport) to import into Munki. Exiting...\n", $logFile);
+		$subject = $subjectPrefix . " ERROR: $name - Can't find downloaded file to import into Munki";
+		$message = "Can't find item to import into Munki. Script terminated...\n\n$name looked for $itemToImport\n";
+		sendEmail(subject => $subject, message => $message);
+		if ($dataPlistSourceIsDir) {
+			next;
+		} else {
+			exit 1;
+		}
+	}
+	
+	logMessage("stdout, log", "Item extracted to $target...", $logFile);
+	
+	
+	###############################################################################
+	# Main App - Step 5: Import into Munki
+	###############################################################################
+	
+	logMessage("stdout, log", "Importing app into Munki...", $logFile);
+	# Show basic progress info
+	if ($progress) {
+		print "Importing app into Munki...\n";
+	}
+	
+	# Get optional command line options for Munki Import
+	my $munkiimportOptions = "";
+	eval { $munkiimportOptions = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "munkiimportOptions")); };
+	if ($munkiimportOptions ne "") {
+		logMessage("stdout, log", "Munki Import command line options: --nointeractive --name \"$name\" $munkiimportOptions", $logFile);
+	}
+	# Import into Munki
+	my $munkiOutput = `$tools{'munkiimport'} --nointeractive --name "$name" $munkiimportOptions \"$target\" | $tools{'grep'} pkgsinfo`;
+	
+	# Get the PkgInfo File for the package we just imported
+	my $pkgInfoPlistPath = $munkiOutput;
+	$pkgInfoPlistPath =~ m/\/(.*)?/gi;
+	$pkgInfoPlistPath = substr($&, 0, -3);
+	logMessage("stdout, log", "PkgInfo File: $pkgInfoPlistPath...", $logFile);
+	
+	logMessage("stdout, log", "Imported app into Munki...", $logFile);
+	
+	###############################################################################
+	# Main App - Step 6: Update PkgInfo and Data Plists
+	###############################################################################
+	
+	logMessage("stdout, log", "Updating Pkginfo...", $logFile);
+	
+	# Read Pkginfo file
+	my $packagedVersion = "";
+	my $pkgInfoPlist = loadDefaults( $pkgInfoPlistPath );
+	if ( ! defined($pkgInfoPlist)) {
+		# Error reading the Plist. Display an error and skip items that relied on it
+		logMessage("stderr, log", "ERROR: The Pkginfo plist can't be read. The import to Munki failed....", $logFile);
+		$subject = $subjectPrefix . " ERROR: $name - Import to Munki Failed";
+		$message = "The Pkginfo plist can't be read. The import to Munki failed.\n";
+		sendEmail(subject => $subject, message => $message);
+		if ($dataPlistSourceIsDir) {
+			next;
+		} else {
+			exit 1;
+		}
+	} else {
+			# Add or override Munki's default keys with ones in our data plist
+		my %keysHash = perlHashFromNSDict(getPlistObject($dataPlist));
+		foreach my $key (sort(keys %keysHash)) {
+			# Remove any of the existing keys
+			if ($key ne "autoMunkiImporter") {
+				logMessage("stdout, log", "Overriding Pkginfo key: $key", $logFile);
+			}
+			removePlistObject($pkgInfoPlist, $key);
+		}
+		
+		# Add the keys from our data plist
+		my $combinedPlist = combineObjects($pkgInfoPlist, $dataPlist);
+		
+		# Remove the keys specific to this script and not Munki
+		removePlistObject($combinedPlist, "autoMunkiImporter");
+	
+		# Save the PkgInfo
+		saveDefaults($combinedPlist, $pkgInfoPlistPath);
+	
+		# Save a copy of the version into the data plist
+		$packagedVersion = perlValue(getPlistObject($pkgInfoPlist, "version"));
+		setPlistObject($dataPlist, "autoMunkiImporter", "corrospoindingVersion", $packagedVersion);
+		saveDefaults($dataPlist, $dataPlistPath);
+	}
+	
+	# Update packaged modification date in data plist, so that we don't attempt to repackage this version
+	updateLastModifiedDate($modifiedDate);
+	
+	logMessage("stdout, log", "Pkginfo Updated...", $logFile);
+	logMessage("stdout, log", "$name version $packagedVersion was imported into Munki. Please test the app to ensure it functions correctly before enabling for any non Dev / Test users.", $logFile);
+	
+	###############################################################################
+	# Main App - Step 7: Notify Package has been imported
+	###############################################################################
+	
+	$subject = $subjectPrefix . " " . $name . " (v" . $packagedVersion . ") has been imported";
+	$message = $name . " (v" . $packagedVersion . ") has been imported into Munki.\n\nIt's pkginfo file is at $pkgInfoPlistPath.";
+	sendEmail(subject => $subject, message => $message);
+	
+	###############################################################################
+	# Main App - Step 8: Optionally run makecatalogs
+	###############################################################################
+	
+	eval { $makecatalogs = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "makecatalogs")); };
+	if ($makecatalogs) {
+		logMessage("stdout, log", "Rebuilding catalogs...", $logFile);
+		system("$tools{'makecatalogs'} > /dev/null");
+	}
+	
+	logMessage("stdout, log", "Finished...", $logFile);
 }
 
 exit 0;
