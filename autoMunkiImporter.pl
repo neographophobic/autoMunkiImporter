@@ -899,7 +899,7 @@ foreach $dataPlistPath (@dataPlists) {
 		$progressOuptutLocation = "2>/dev/null";
 	}
 	
-	system("$tools{'curl'} -o \"$downloadFileName\" \"$url\" $progressOuptutLocation");
+	system("$tools{'curl'} --user-agent \"$userAgent\" -o \"$downloadFileName\" \"$url\" $progressOuptutLocation");
 	logMessage("stdout, log", "Download complete...", $logFile);
 	
 	
