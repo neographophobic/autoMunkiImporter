@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>autoMunkiImporter</key>
+	<dict>
+		<key>URLToMonitor</key>
+		<string>http://www.skype.com/go/getskype-macosx.dmg</string>
+		<key>downloadLinkRegex</key>
+		<string></string>
+		<key>emailReports</key>
+		<true/>
+		<key>itemToImport</key>
+		<string>Skype.app</string>
+		<key>makecatalogs</key>
+		<true/>
+		<key>munkiimportOptions</key>
+		<string>--subdirectory &quot;apps/skype&quot;</string>
+		<key>name</key>
+		<string>Skype</string>
+		<key>secondLinkRegex</key>
+		<string></string>
+		<key>type</key>
+		<string>static</string>
+	</dict>
+	<key>catalogs</key>
+	<array>
+		<string>autopkg</string>
+	</array>
+	<key>description</key>
+	<string>Skype is a VOIP application that allows voice and video calls to other Skype users, or fixed lines (paid extra).</string>
+</dict>
+</plist>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>autoMunkiImporter</key>
+	<dict>
+		<key>URLToMonitor</key>
+		<string></string>
+		<key>name</key>
+		<string></string>
+		<key>type</key>
+		<string>static</string>
+		<key>itemToImport</key>
+		<string></string>
+		<key>makecatalogs</key>
+		<true/>
+		<key>munkiimportOptions</key>
+		<string>--subdirectory &quot;apps/&quot;</string>
+		<key>emailReports</key>
+		<true/>
+		<key>downloadLinkRegex</key>
+		<string></string>
+		<key>secondLinkRegex</key>
+		<string></string>
+	</dict>
+	<key>catalogs</key>
+	<array>
+		<string>autopkg</string>
+	</array>
+</dict>
+</plist>

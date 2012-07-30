@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>autoMunkiImporter</key>
+	<dict>
+		<key>URLToMonitor</key>
+		<string>http://www.microsoft.com/getsilverlight/handlers/getsilverlight.ashx</string>
+		<key>downloadLinkRegex</key>
+		<string></string>
+		<key>emailReports</key>
+		<true/>
+		<key>itemToImport</key>
+		<string>Silverlight.pkg</string>
+		<key>makecatalogs</key>
+		<true/>
+		<key>munkiimportOptions</key>
+		<string>--subdirectory &quot;apps/microsoft&quot;</string>
+		<key>name</key>
+		<string>Silverlight</string>
+		<key>secondLinkRegex</key>
+		<string></string>
+		<key>type</key>
+		<string>static</string>
+	</dict>
+	<key>catalogs</key>
+	<array>
+		<string>autopkg</string>
+	</array>
+	<key>description</key>
+	<string>Microsoft Silverlight Browser Plug-in enables the playback of Silverlight content.</string>
+	<key>display_name</key>
+	<string>Microsoft Silverlight Browser Plug-in</string>
+</dict>
+</plist>

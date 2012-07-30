@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>autoMunkiImporter</key>
+	<dict>
+		<key>URLToMonitor</key>
+		<string>https://dl.google.com/chrome/mac/stable/GGRM/googlechrome.dmg</string>
+		<key>downloadLinkRegex</key>
+		<string></string>
+		<key>emailReports</key>
+		<true/>
+		<key>itemToImport</key>
+		<string>Google Chrome.app</string>
+		<key>makecatalogs</key>
+		<true/>
+		<key>modifiedDate</key>
+		<string>Wed, 11 Jul 2012 16:35:00 GMT</string>
+		<key>name</key>
+		<string>Chrome</string>
+		<key>secondLinkRegex</key>
+		<string></string>
+		<key>type</key>
+		<string>static</string>
+	</dict>
+	<key>catalogs</key>
+	<array>
+		<string>autopkg</string>
+	</array>
+	<key>display_name</key>
+	<string>Google Chrome Web Browser</string>
+</dict>
+</plist>

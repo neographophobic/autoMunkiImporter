@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>autoMunkiImporter</key>
+	<dict>
+		<key>URLToMonitor</key>
+		<string>http://get.adobe.com/flashplayer/</string>
+		<key>downloadLinkRegex</key>
+		<string>Download Now</string>
+		<key>emailReports</key>
+		<true/>
+		<key>itemToImport</key>
+		<string>Adobe Flash Player.pkg</string>
+		<key>makecatalogs</key>
+		<true/>
+		<key>munkiimportOptions</key>
+		<string>--subdirectory &quot;apps/adobe&quot;</string>
+		<key>name</key>
+		<string>AdobeFlashPlayer</string>
+		<key>secondLinkRegex</key>
+		<string>location.href\s*=\s*&apos;(.+?)&apos;</string>
+		<key>type</key>
+		<string>dynamic</string>
+	</dict>
+	<key>catalogs</key>
+	<array>
+		<string>autopkg</string>
+	</array>
+	<key>description</key>
+	<string>Adobe Flash Player Plugin for Web Browsers</string>
+	<key>display_name</key>
+	<string>Adobe Flash Player</string>
+</dict>
+</plist>
