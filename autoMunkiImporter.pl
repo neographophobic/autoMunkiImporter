@@ -107,6 +107,7 @@ my $help = 0; # Show help info (0 = false)
 my $reset = 0; # Reset the modification date (0 = false)
 my $ignoreModDate = 0; # Ignore modification date (0 = false)
 my $showScriptVersion = 0; # Show script version (0 = false)
+my $testScript = 0; # Test the script has the appropriate items (0 = false)
 
 # App Name
 my $name = undef;
@@ -176,6 +177,20 @@ sub checkTools {
 		}
 	}
 	return 1;
+}
+
+sub checkPermissions {
+	# Check Log is writable
+	if (! -w $logFile) {
+		logMessage("stderr, log", "ERROR: Can't write to log file: $logFile.", undef);		
+		exit 1;
+	}
+
+	# Check Data dir is writable
+	if (! -w $dataPlistPath) {
+		logMessage("stderr, log", "ERROR: Can't write to data plist: $dataPlistPath.", undef);		
+		exit 1;
+	}
 }
 
 ###############################################################################
@@ -689,6 +704,7 @@ GetOptions ('data=s'     	=> \$dataPlistPath,
 			'help|h|?'   	=> \$help, 
 			'version'    	=> \$showScriptVersion, 
 			'ignoreModDate' => \$ignoreModDate,
+			'test' 			=> \$testScript,
 			'reset'      	=> \$reset);
 
 # Show the help info if requested
@@ -706,6 +722,13 @@ if (! defined($dataPlistPath) || ! -e $dataPlistPath) {
 	logMessage("stderr, log", "ERROR: The data plist needs to be provided via a command line argument of --data /path/to/data.plist", $logFile);
 	pod2usage(1);
 	exit 1;
+}
+
+# Check paths are writable
+checkPermissions();
+if ($testScript) {
+	logMessage("stdout, log", "All tests passed...", $logFile);
+	exit 0;
 }
 
 if (-d $dataPlistPath) {
@@ -1147,10 +1170,11 @@ autoMunkiImporter.pl --data /path/to/data[.plist] [options]
 	--ignoreModDate				Ignore the modified date and version info from the data plist
 	--progress				Prints progress information to STDOUT
 	--reset					Resets the modified date for an app
+	--test					Tests that the script has all of the required items and rights
 	--verbose				Show verbose output to STDOUT
 	--version				Prints scripts version to STDOUT
 
-	perldoc autoMunkiImporter.pl		For more detailed information
+	man autoMunkiImporter.pl		For more detailed information
 
 =head1 OPTIONS
 
@@ -1186,6 +1210,11 @@ Reports progress of the script to STDOUT
 Resets the modified date of an app to the current modification date, without downloading or 
 importing the item into Munki. Use this when the latest version of an app is in your Munki repo, so 
 that this script doesn't attempt to re add it, of if you want to skip a version.
+
+=item B<--test>
+
+Checks that the script passes it's initial checks, and that it has permissions to write to
+the appropriate locations.
 
 =item B<--verbose>
 
