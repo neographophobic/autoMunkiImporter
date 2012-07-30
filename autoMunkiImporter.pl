@@ -108,6 +108,9 @@ my $reset = 0; # Reset the modification date (0 = false)
 my $ignoreModDate = 0; # Ignore modification date (0 = false)
 my $showScriptVersion = 0; # Show script version (0 = false)
 
+# App Name
+my $name = undef;
+
 ###############################################################################
 # Helper Functions - Dependencies
 ###############################################################################
@@ -719,7 +722,7 @@ foreach $dataPlistPath (@dataPlists) {
 	$dataPlist = readDataPlist($dataPlistPath);
 	
 	# Get product name
-	my $name = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "name"));
+	$name = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "name"));
 	# Get optional Log File name (overwriting the one in this script)
 	eval { $logFile = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "logFile")); };
 	
