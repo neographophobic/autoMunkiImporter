@@ -97,7 +97,7 @@ my $subject = "";
 my $message = "";
 
 # Script version
-my $scriptVersion = "v0.1.0";
+my $scriptVersion = "0.4";
 
 # Command Line options 
 my $downloadOnly = 0; # Do a download only, without importing the package (0 = false)
