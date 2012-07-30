@@ -14,7 +14,8 @@ PAYLOAD=\
 		pack-private-etc-pathsd \
 		pack-usr-local-autoMunkiImporter \
 		pack-usr-local-share-man-man1 \
-		pack-resource-background
+		pack-resource-background \
+		pack-resource-readme
 
 # Sample Data Plists
 pack-library-application_support-autoMunkiImporter: l_Library_Application_Support_autoMunkiImport
@@ -87,9 +88,12 @@ l_usr_local_share_man: l_usr_local_share
 	@sudo chown root:wheel ${WORK_D}/usr/local/share/man
 	@sudo chmod 0755 ${WORK_D}/usr/local/share/man
 
-# Package Background
+# Package Background and Readme
 pack-resource-background:
 	@sudo ${INSTALL} -m 755 background.png ${RESOURCE_D}/background
+
+pack-resource-readme:
+	@sudo ${INSTALL} -m 755 readme.rtf ${RESOURCE_D}/ReadMe.rtf
 
 # Overwrite Luggage defaults
 modify_packageroot:

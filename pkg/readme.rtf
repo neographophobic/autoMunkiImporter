@@ -1,0 +1,77 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1138\cocoasubrtf470
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}.}{\leveltext\leveltemplateid1\'02\'00.;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listlevel\levelnfc2\levelnfcn2\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{lower-roman\}.}{\leveltext\leveltemplateid2\'02\'01.;}{\levelnumbers\'01;}\fi-360\li1440\lin1440 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{hyphen\}}{\leveltext\leveltemplateid3\'01\uc0\u8259 ;}{\levelnumbers;}\fi-360\li2160\lin2160 }{\listname ;}\listid1}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}}
+\paperw11900\paperh16840\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\qc
+
+\f0\b\fs38 \cf0 AutoMunkiImporter Install
+\b0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\fs26 \cf0 \
+This package will install the autoMunkiImporter tool and some sample data files for AdobeFlash Player, Adobe Reader, Chrome, Firefox (both ESR and Release Channel versions), Flip4Mac WMV Quicktime Components, Silverlight, Skype and VLC (installed into /Library/Application Support/autoMunkiImporter).\
+\
+
+\b\fs30 Once the installer is complete there are a number of steps you need to do. They are:-\
+
+\b0\fs26 \
+\pard\tx220\tx720\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li720\fi-720\pardirnatural
+\ls1\ilvl0\cf0 {\listtext	1.	}Determine what user the script will run as. This user needs to be able to write to the following locations:-\
+\pard\tx940\tx1440\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li1440\fi-1440\pardirnatural
+\ls1\ilvl1\cf0 {\listtext	\uc0\u8259 	} /Library/Application Support/autoMunkiImporter\
+{\listtext	\uc0\u8259 	}/Library/Logs/autoMunkiImporter\
+{\listtext	\uc0\u8259 	}Your Munki Repo\
+\pard\tx220\tx720\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li720\fi-720\pardirnatural
+\ls1\ilvl0\cf0 {\listtext	2.	}Ensure "
+\i munkiimport --configure
+\i0 " has been run for the user picked in step 1, and that it points to you Munki Repo\
+{\listtext	3.	}Edit /usr/local/autoMunkiImporter.pl\
+\pard\tx940\tx1440\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li1440\fi-1440\pardirnatural
+\ls1\ilvl1\cf0 {\listtext	\uc0\u8259 	}Set the emailServer, emailTo, and emailFrom (search for REPLACE_ME) to appropriate values for your organisation\
+\pard\tx220\tx720\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li720\fi-720\pardirnatural
+\ls1\ilvl0\cf0 {\listtext	4.	}Install Required Perl Modules\
+\pard\tx940\tx1440\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li1440\fi-1440\pardirnatural
+\ls1\ilvl1\cf0 {\listtext	i.	}Install the Command Line Tools for Xcode from https://developer.apple.com/downloads/index.action (you will need a free developer account to get these).\
+\pard\tx940\tx1440\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li1440\fi-1440\pardirnatural
+\ls1\ilvl1
+\i \cf0 {\listtext	ii.	}sudo cpan
+\i0 \
+\pard\tx1660\tx2160\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li2160\fi-2160\pardirnatural
+\ls1\ilvl2\cf0 {\listtext	\uc0\u8259 	}Accept the defaults for setting up CPAN\
+\pard\tx940\tx1440\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li1440\fi-1440\pardirnatural
+\ls1\ilvl1
+\i \cf0 {\listtext	iii.	}install Date::Parse
+\i0 \
+\ls1\ilvl1
+\i {\listtext	iv.	}install Mail::Mailer
+\i0 \
+\ls1\ilvl1
+\i {\listtext	v.	}install URI::Escape
+\i0 \
+\ls1\ilvl1
+\i {\listtext	vi.	}install URI::URL
+\i0 \
+\ls1\ilvl1
+\i {\listtext	vii.	}install WWW::Mechanize
+\i0 \
+\pard\tx220\tx720\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li720\fi-720\pardirnatural
+\ls1\ilvl0\cf0 {\listtext	5.	}Test the install by running "/usr/local/autoMunkiImporter/autoMunkiImporter.pl --data "/Library/Application Support/autoMunkiImporter" --test"\
+\pard\tx940\tx1440\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li1440\fi-1440\pardirnatural
+\ls1\ilvl1\cf0 {\listtext	\uc0\u8259 	}It should tell you that all tests passed\
+\pard\tx220\tx720\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li720\fi-720\pardirnatural
+\ls1\ilvl0\cf0 {\listtext	6.	}Edit /Library/LaunchDaemons/au.edu.anu.autoMunkiImporter.plist\
+\pard\tx940\tx1440\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li1440\fi-1440\pardirnatural
+\ls1\ilvl1\cf0 {\listtext	\uc0\u8259 	}replace "REPLACE_ME" with the short name of the user you identified in step 1\
+{\listtext	\uc0\u8259 	}Set Disabled to false\
+{\listtext	\uc0\u8259 	}You may also want to change the Hour and Minute fields from 5:00am to something else\
+\pard\tx220\tx720\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li720\fi-720\pardirnatural
+\ls1\ilvl0\cf0 {\listtext	7.	}Run 
+\i sudo launchctl load /Library/LaunchDaemons/au.edu.anu.autoMunkiImporter.plist\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+
+\i0 \cf0 \
+The Automatic Munki Importer is now configured and set to run automatically. For more information run man autoMunkiImporter.pl.\
+\
+}
