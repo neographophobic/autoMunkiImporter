@@ -16,7 +16,7 @@
 # Check that there is 1 argument
 if [ $# -ne 1 ]
 then
-  echo "Usage: `basename $0` v#.#.#"
+  echo "Usage: `basename $0` #.#.#"
   exit 1
 fi
 
@@ -38,8 +38,9 @@ fi
 
 # Set Version for Script
 echo "Update script version..."
-sed "s/my \$scriptVersion = \".*\";/my \$scriptVersion = \"$1\";/" autoMunkiImporter.pl > autoMunkiImporter.pl.out
+sed "s/my \$scriptVersion = \".*\";/my \$scriptVersion = \"v$1\";/" autoMunkiImporter.pl > autoMunkiImporter.pl.out
 mv autoMunkiImporter.pl.out autoMunkiImporter.pl
+chmod +x autoMunkiImporter.pl
 
 # Create MAN Page
 echo "Creating man page..."
@@ -55,11 +56,11 @@ echo "Adding changes to git..."
 git add autoMunkiImporter.pl
 git add pkg/autoMunkiImporter.pl.1
 git add pkg/Makefile
-git commit -m "Setting version numbers for $1"
+git commit -m "Setting version numbers for v$1"
 
 # Tag release
 echo "Tagging version..."
-git tag -a -m "Tagging version $1" $1
+git tag -a -m "Tagging version v$1" v$1
 
 # Make PKG
 echo "Making package disk image..."
