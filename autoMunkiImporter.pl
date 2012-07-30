@@ -14,7 +14,7 @@
 # before the actual download), and sparkle rss feeds. This generic 
 # approach should allow you to monitor most applications.
 
-# It also supports downloads in DMG (including support for disk images 
+# It supports downloads in flat PKGs, DMG (including support for disk images 
 # with licence agreements), ZIP, TAR, TAR.GZ, TGZ, and TBZ. It will import a 
 # single item (APP or PKG) from anywhere within the download, so the 
 # content doesn't have to be in the top level folder. This is achieved by
@@ -24,7 +24,7 @@
 ######### COMMENTS #####################################################
 # Detailed documentation is provided at the end of the script. The best
 # way of accessing it is to run:-
-#
+
 # perldoc /path/to/autoMunkiImporter.pl
 
 ######### AUTHOR #######################################################
@@ -1092,8 +1092,8 @@ It can handle static urls, dynamic urls where the URL or link to the url change 
 version (it can also handle landing pages before the actual download), and sparkle rss feeds. This 
 generic approach should allow you to monitor most applications.
 
-It also supports downloads in DMG (including support for disk images with licence agreements), ZIP,
-TAR TAR.GZ, TGZ, and TBZ. It will import a single item (APP or PKG) from anywhere within the 
+It supports downloads in flat PKGs, DMG (including support for disk images with licence agreements), 
+ZIP, TAR TAR.GZ, TGZ, and TBZ. It will import a single item (APP or PKG) from anywhere within the 
 download, so the content doesn't have to be in the top level folder. This is achieved by using find 
 to locate the item (e.g. the Adobe Flash Player.pkg from within the Adobe Flash download).
 
