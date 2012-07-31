@@ -181,14 +181,15 @@ sub checkTools {
 
 sub checkPermissions {
 	# Check Log is writable
-	if (! -w $logFile) {
-		logMessage("stderr, log", "ERROR: Can't write to log file: $logFile.", undef);		
+	my $logFileDir = dirname($logFile);
+	if (! -w "$logFileDir") {
+		logMessage("stderr", "ERROR: Can't write to log file: $logFile", undef);		
 		exit 1;
 	}
 
 	# Check Data dir is writable
-	if (! -w $dataPlistPath) {
-		logMessage("stderr, log", "ERROR: Can't write to data plist: $dataPlistPath.", undef);		
+	if (! -w "$dataPlistPath") {
+		logMessage("stderr, log", "ERROR: Can't write to data plist: $dataPlistPath.", $logFile);		
 		exit 1;
 	}
 }
@@ -718,14 +719,14 @@ if ($showScriptVersion) {
 
 # Check email details have been set
 if ($smtpServer eq "REPLACE_ME" || $fromAddress eq 'REPLACE_ME@example.com' || $toAddress eq 'REPLACE_ME@example.com') {
-	logMessage("stderr, log", "ERROR: The default smtpServer, emailTo and emailFrom variables need to be set within the script...", $logFile);
+	logMessage("stderr", "ERROR: The default smtpServer, emailTo and emailFrom variables need to be set within the script...", $logFile);
 	exit 1;
 }
 
 # Check $dataPlistPath was set, and that a file exists at the location 
 if (! defined($dataPlistPath) || ! -e $dataPlistPath) {
 	# No argument, or does not exist, bail showing usage
-	logMessage("stderr, log", "ERROR: The data plist needs to be provided via a command line argument of --data /path/to/data.plist", $logFile);
+	logMessage("stderr", "ERROR: The data plist needs to be provided via a command line argument of --data /path/to/data.plist", $logFile);
 	pod2usage(1);
 	exit 1;
 }
@@ -733,7 +734,7 @@ if (! defined($dataPlistPath) || ! -e $dataPlistPath) {
 # Check paths are writable
 checkPermissions();
 if ($testScript) {
-	logMessage("stdout, log", "All tests passed...", $logFile);
+	print "All tests passed...\n";
 	exit 0;
 }
 
