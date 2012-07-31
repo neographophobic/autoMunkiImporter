@@ -840,7 +840,7 @@ foreach $dataPlistPath (@dataPlists) {
 	my $httpCode = 0;
 	foreach my $line (@headers) {
 		# Flag if we find a HTTP Status Code of 200
-		if ($line =~ /HTTP\/\d.\d 200 OK/i) {
+		if ($line =~ /HTTP\/\d.\d 200/i) {
 			$httpCode = 1;	
 		}
 	
