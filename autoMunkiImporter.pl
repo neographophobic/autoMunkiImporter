@@ -632,7 +632,7 @@ sub sendEmail {
 }
 
 sub updateLastModifiedDate {
-	my ($modifiedDate) = @_;
+	my ($modifiedDate, $dataPlist, $dataPlistPath) = @_;
 	setPlistObject($dataPlist, "autoMunkiImporter", "modifiedDate", $modifiedDate);
 	saveDefaults($dataPlist, $dataPlistPath);
 }
@@ -883,7 +883,7 @@ foreach $dataPlistPath (@dataPlists) {
 	
 	# If just resetting the modified date, bail at this stage
 	if ($reset) {
-		updateLastModifiedDate($modifiedDate);
+		updateLastModifiedDate($modifiedDate, $dataPlist, $dataPlistPath);
 		if ($dataPlistSourceIsDir) {
 			next;
 		} 
@@ -1132,7 +1132,7 @@ foreach $dataPlistPath (@dataPlists) {
 	}
 	
 	# Update packaged modification date in data plist, so that we don't attempt to repackage this version
-	updateLastModifiedDate($modifiedDate);
+	updateLastModifiedDate($modifiedDate, $dataPlist, $dataPlistPath);
 	
 	logMessage("stdout, log", "Pkginfo Updated...", $logFile);
 	logMessage("stdout, log", "$name version $packagedVersion was imported into Munki. Please test the app to ensure it functions correctly before enabling for any non Dev / Test users.", $logFile);
