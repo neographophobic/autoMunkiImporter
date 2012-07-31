@@ -21,19 +21,28 @@ use Foundation;
 use File::Basename;
 use CWD qw(realpath);
 
-# Import the PerlPlist Library
+# Setup Paths
 my $perlPlistPath;
-if (-e dirname($0) . "/perlplist.pl") {
-	$perlPlistPath = dirname($0) . "/perlplist.pl";
+my $scriptPath;
+my $dataPath;
+
+# Where are we running from?
+if ($0 =~ /\/usr\/local\/autoMunkiImporter\//) {
+	$perlPlistPath = "/usr/local/autoMunkiImporter/perlplist.pl";
+	$scriptPath = "/usr/local/autoMunkiImporter/autoMunkiImporter.pl";
+	$dataPath = "/Library/Application Support/autoMunkiImporter";
 } else {
-	$perlPlistPath = dirname($0) . "/../perlplist.pl";
+	my $parentPath = dirname($0) . "/../";
+	$perlPlistPath = $parentPath . "/perlplist.pl";
+	$scriptPath = $parentPath . "/autoMunkiImporter.pl";
+	$dataPath = $parentPath . "data";	
 }
+
+# Import the PerlPlist Library
 require $perlPlistPath;
 
 # Command to run and test (first run will add --ignoreModDate)
-my $scriptPath = $parentPath . "autoMunkiImporter.pl";
-my $dataPath   = $parentPath. "data";
-my $command =  "$scriptPath --progress --data $dataPath";
+my $command =  "$scriptPath --progress --data \"$dataPath\"";
 
 # Step 1 - Make Temp Repo
 my ($second, $minute, $hour, $dayOfMonth, $month, $yearOffset, $dayOfWeek, $dayOfYear, $daylightSavings) = localtime();
