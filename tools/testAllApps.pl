@@ -22,8 +22,13 @@ use File::Basename;
 use CWD qw(realpath);
 
 # Import the PerlPlist Library
-my $parentPath = dirname($0) . "/../";
-require $parentPath . "perlplist.pl";
+my $perlPlistPath;
+if (-e dirname($0) . "/perlplist.pl") {
+	$perlPlistPath = dirname($0) . "/perlplist.pl";
+} else {
+	$perlPlistPath = dirname($0) . "/../perlplist.pl";
+}
+require $perlPlistPath;
 
 # Command to run and test (first run will add --ignoreModDate)
 my $scriptPath = $parentPath . "autoMunkiImporter.pl";
