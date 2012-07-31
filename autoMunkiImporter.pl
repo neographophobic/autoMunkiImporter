@@ -154,7 +154,7 @@ sub checkMunkiRepoIsAvailable {
 	} else {
 		my $repo_path = perlValue(getPlistObject($munkiImportConfigPlist, "repo_path"));
 
-		if ( -d "$repo_path" && -d "$repo_path/pkgs" && -d "$repo_path/pkgsinfo") {
+		if ( -d "$repo_path" && -w "$repo_path/pkgs" && -w "$repo_path/pkgsinfo") {
 			# Munki repo is available and include pkgs and pkgsinfo directories
 			return 1;
 		} else {
