@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "AUTOMUNKIIMPORTER 1"
-.TH AUTOMUNKIIMPORTER 1 "2012-07-30" "v0.0.0" "Tool Reference Manual"
+.TH AUTOMUNKIIMPORTER 1 "2012-07-31" "0.1.0" "Tool Reference Manual"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -135,7 +135,7 @@ autoMunkiImporter \- Automatically import apps into Munki
 .IX Header "SYNOPSIS"
 autoMunkiImporter.pl \-\-data /path/to/data[.plist] [options]
 .PP
-.Vb 9
+.Vb 10
 \& Options:
 \&        \-\-data /path/to/data[.plist]            Path to the data plist or directory containing data plists (required)
 \&        \-\-download                              Only download the file (doesn\*(Aqt import into Munki)
@@ -143,10 +143,11 @@ autoMunkiImporter.pl \-\-data /path/to/data[.plist] [options]
 \&        \-\-ignoreModDate                         Ignore the modified date and version info from the data plist
 \&        \-\-progress                              Prints progress information to STDOUT
 \&        \-\-reset                                 Resets the modified date for an app
+\&        \-\-test                                  Tests that the script has all of the required items and rights
 \&        \-\-verbose                               Show verbose output to STDOUT
 \&        \-\-version                               Prints scripts version to STDOUT
 \&
-\&        perldoc autoMunkiImporter.pl            For more detailed information
+\&        man autoMunkiImporter.pl                For more detailed information
 .Ve
 .SH "OPTIONS"
 .IX Header "OPTIONS"
@@ -175,6 +176,10 @@ Reports progress of the script to \s-1STDOUT\s0
 Resets the modified date of an app to the current modification date, without downloading or 
 importing the item into Munki. Use this when the latest version of an app is in your Munki repo, so 
 that this script doesn't attempt to re add it, of if you want to skip a version.
+.IP "\fB\-\-test\fR" 8
+.IX Item "--test"
+Checks that the script passes it's initial checks, and that it has permissions to write to
+the appropriate locations.
 .IP "\fB\-\-verbose\fR" 8
 .IX Item "--verbose"
 In addition to writing to the log, show log and progress messages on \s-1STDOUT\s0
