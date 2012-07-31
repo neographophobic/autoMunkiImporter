@@ -769,9 +769,7 @@ foreach $dataPlistPath (@dataPlists) {
 	eval { $disabled = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "disabled")); };
 	if ($disabled) {
 		logMessage("stdout, log", "Automatic Update Check is DISABLED. Exiting...", $logFile);
-		if ($dataPlistSourceIsDir) {
-			next;
-		} 
+		next;
 	}
 	
 	# Show basic progress info
@@ -884,9 +882,7 @@ foreach $dataPlistPath (@dataPlists) {
 	# If just resetting the modified date, bail at this stage
 	if ($reset) {
 		updateLastModifiedDate($modifiedDate, $dataPlist, $dataPlistPath);
-		if ($dataPlistSourceIsDir) {
-			next;
-		} 
+		next;
 	}
 	
 	# Compare latest modification date to what we have already packaged
