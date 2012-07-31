@@ -677,7 +677,7 @@ sub getDataPlists {
 	my @dirContents = <$path/*>;
 	my $item;
 	foreach $item (@dirContents) {
-		if (-f $item && $item =~ /\.plist$/ && $item !~ /_template\.plist$/ ) {
+		if (-f $item && $item =~ /\.plist$/ && $item !~ /_.+\.plist$/ ) {
 			# Plist, so add it to the array
 			push(@dataPlists, $item);
 		}
