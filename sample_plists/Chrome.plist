@@ -14,10 +14,10 @@
 		<string>Google Chrome.app</string>
 		<key>makecatalogs</key>
 		<true/>
-		<key>modifiedDate</key>
-		<string>Wed, 11 Jul 2012 16:35:00 GMT</string>
 		<key>name</key>
 		<string>Chrome</string>
+		<key>munkiimportOptions</key>
+		<string>--subdirectory &quot;apps/google&quot;</string>
 		<key>secondLinkRegex</key>
 		<string></string>
 		<key>type</key>
