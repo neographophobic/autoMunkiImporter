@@ -1192,6 +1192,8 @@ sub perlValue {
   } elsif ( objectType ( $object ) eq "NSCFData" ) {
     my $hex = $object->description()->UTF8String();
     $return_value = hexToBase64($hex);
+  } elsif ( objectType ( $object ) eq "NSCFDate" ) {
+    $return_value = $object->descriptionWithLocale_(NSLocale->currentLocale())->UTF8String();
   } else {
     $return_value = $object->description()->UTF8String();
     $return_value =~ s/&/&amp;/g;
