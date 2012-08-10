@@ -520,8 +520,6 @@ sub setPlistObjectForce {
   my ( $plistContainer, $pathRef ) = ( @_ );
   print "sub setPlistObjectForce start line " . __LINE__ . "\n" if $debug and $debug_tracing;
 
-  my $debug = 0;
-
   my $perlplist_dict_token = '-d';
   my $perlplist_array_token = '-a';
   my $perlplist_array_insert_token = '-ai';
