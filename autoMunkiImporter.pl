@@ -348,17 +348,33 @@ sub findFinalURLAfterRedirects {
 	my ($url) = @_;
 	
 	my $checkForRedirect = 1; # True
+	my %seenURLs = ();
+	
+	$seenURLs{$url} = 1;
 	
 	while ($checkForRedirect) {
 		my $newURL = handleRedirect($url);
 		if ($newURL eq $url) {
 			$checkForRedirect = 0;
 		} else {
-			$url = $newURL;
-		}	
+			if (exists($seenURLs{$newURL})) {
+				logMessage("stderr, log", "ERROR: Redirect Loop found", $logFile);
+				$subject = $subjectPrefix . " ERROR: $name - Redirect Loop found";
+				$message = "While determining the URL of the download a redirect loop was detected.\nScript terminated...";
+				sendEmail(subject => $subject, message => $message);
+				if ($dataPlistSourceIsDir) {
+					return undef;
+				} else {
+					exit 1;
+				}						
+			} else {
+				$seenURLs{$newURL} = 1;
+				$url = $newURL;
+			}	
+		}
 	}
-
-	return $url
+	
+	return $url;
 }
 
 sub handleRedirect {
