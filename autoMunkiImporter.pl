@@ -112,6 +112,9 @@ my $testScript = 0; # Test the script has the appropriate items (0 = false)
 # App Name
 my $name = undef;
 
+# Supported Download Types
+my @supportedDownloadTypes = ("pkg", "mpkg", "dmg", "zip", "tar", "tar.gz", "tgz", "tbz");
+
 ###############################################################################
 # Helper Functions - Dependencies
 ###############################################################################
@@ -928,6 +931,24 @@ foreach $dataPlistPath (@dataPlists) {
 	# Main App - Step 3: Download the new version of the app
 	###############################################################################
 	
+	# Sanity check download to ensure it's of a supported type
+	
+	# Match a dot, followed by any number of non-dots until the end of the line.
+	$url =~ /(\.[^.]+)$/;
+	my $ext = substr($&, 1); # Get the match, and trim the full stop
+	if (! grep( /^$ext$/, @supportedDownloadTypes ) ) {
+		# Download is in an unsupported format.
+		logMessage("stderr, log","ERROR: Download is in an unsupported format. Exiting...\n", $logFile);
+		$subject = $subjectPrefix . " ERROR: $name - Download is in an unsupported format";
+		$message = "URL implies that the download would be in an unsupported format ($url). Script terminated...";
+		sendEmail(subject => $subject, message => $message);
+		if ($dataPlistSourceIsDir) {
+			next;
+		} else {
+			exit 1;
+		}
+	}	
+	
 	my $tmpDIR = File::Temp->newdir();
 	my $downloadFileName = addTrailingSlash($tmpDIR) . basename($url);
 	logMessage("stdout, log", "Starting download of Final URL to $downloadFileName...", $logFile);
@@ -1040,10 +1061,10 @@ foreach $dataPlistPath (@dataPlists) {
 		# Flat package, so no prep is required
 		$target = $downloadFileName;
 	} else {
-		# Download is in an unknown format.
-		logMessage("stderr, log","ERROR: Download is in an unknown format. Exiting...\n", $logFile);
-		$subject = $subjectPrefix . " ERROR: $name - Download is in an unknown format";
-		$message = "Download is in an unknown format ($downloadFileName). Script terminated...";
+		# Download is in an unsupported format - Should be caught in step 3, but here as a failsafe.
+		logMessage("stderr, log","ERROR: Download is in an unsupported format. Exiting...\n", $logFile);
+		$subject = $subjectPrefix . " ERROR: $name - Download is in an unsupported format";
+		$message = "Download is in an unsupported format ($downloadFileName). Script terminated...";
 		sendEmail(subject => $subject, message => $message);
 		if ($dataPlistSourceIsDir) {
 			next;
