@@ -673,24 +673,57 @@ sub updateStatus {
 	my $now = time();
 	
 	# Data Plist
-	my @lastStatus_Data = ("-d", "autoMunkiImporter", "-d", "lastStatus", "-s", $message);
+	my @lastStatus_Data  = ("-d", "autoMunkiImporter", "-d", "lastStatus", "-s", $message);
 	my @lastRunTime_Data = ("-d", "autoMunkiImporter", "-d", "lastRunTime", "-t", $now);
 	setPlistObjectForce( $dataPlist, \@lastStatus_Data );
 	setPlistObjectForce( $dataPlist, \@lastRunTime_Data );
 	saveDefaults( $dataPlist, $dataPlistPath );
 	
 	# Status Plist
-	my @lastStatus_Status = ("-d", $name, "-d", "lastStatus", "-s", $message);
+	my @lastStatus_Status  = ("-d", $name, "-d", "lastStatus", "-s", $message);
 	my @lastRunTime_Status = ("-d", $name, "-d", "lastRunTime", "-t", $now);
 	setPlistObjectForce( $statusPlist, \@lastStatus_Status );
 	setPlistObjectForce( $statusPlist, \@lastRunTime_Status );
 	saveDefaults( $statusPlist, $statusPlistPath );
+}
+
+sub recordNewVersion {
+	my %args = @_;
+		
+	# Data Plist	
+	my @modifiedDate_Data = ("-d", "autoMunkiImporter", "-d", "Import History", "-d", $args{version}, "-d", "modifiedDate", "-t", $args{modifiedDate});
+	my @importDate_Data   = ("-d", "autoMunkiImporter", "-d", "Import History", "-d", $args{version}, "-d", "importDate", "-t", time());
+	my @initialURL_Data   = ("-d", "autoMunkiImporter", "-d", "Import History", "-d", $args{version}, "-d", "InitialURL", "-s", $args{initialURL});
+	my @finalURL_Data     = ("-d", "autoMunkiImporter", "-d", "Import History", "-d", $args{version}, "-d", "finalURL", "-s", $args{finalURL});
+	my @pkginfoPath_Data  = ("-d", "autoMunkiImporter", "-d", "Import History", "-d", $args{version}, "-d", "pkginfoPath", "-s", $args{pkginfoPath});
+	setPlistObjectForce( $dataPlist, \@modifiedDate_Data );
+	setPlistObjectForce( $dataPlist, \@importDate_Data );
+	setPlistObjectForce( $dataPlist, \@initialURL_Data );
+	setPlistObjectForce( $dataPlist, \@finalURL_Data );
+	setPlistObjectForce( $dataPlist, \@pkginfoPath_Data );
+	saveDefaults( $dataPlist, $dataPlistPath );	
+
+	# Status Plist	
+	my @modifiedDate_Status = ("-d", $args{name}, "-d", "Import History", "-d", $args{version}, "-d", "modifiedDate", "-t", $args{modifiedDate});
+	my @importDate_Status   = ("-d", $args{name}, "-d", "Import History", "-d", $args{version}, "-d", "importDate", "-t", time());
+	my @initialURL_Status   = ("-d", $args{name}, "-d", "Import History", "-d", $args{version}, "-d", "InitialURL", "-s", $args{initialURL});
+	my @finalURL_Status     = ("-d", $args{name}, "-d", "Import History", "-d", $args{version}, "-d", "finalURL", "-s", $args{finalURL});
+	my @pkginfoPath_Status  = ("-d", $args{name}, "-d", "Import History", "-d", $args{version}, "-d", "pkginfoPath", "-s", $args{pkginfoPath});
+	setPlistObjectForce( $statusPlist, \@modifiedDate_Status );
+	setPlistObjectForce( $statusPlist, \@importDate_Status );
+	setPlistObjectForce( $statusPlist, \@initialURL_Status );
+	setPlistObjectForce( $statusPlist, \@finalURL_Status );
+	setPlistObjectForce( $statusPlist, \@pkginfoPath_Status );
+	saveDefaults( $statusPlist, $statusPlistPath );	
 	
+	updateStatus($name, "v$args{version} imported into Munki - PkgInfo Path: $args{pkginfoPath}");
+
 }
 
 sub updateLastModifiedDate {
 	my ($modifiedDate, $dataPlist, $dataPlistPath) = @_;
-	setPlistObject($dataPlist, "autoMunkiImporter", "modifiedDate", $modifiedDate);
+	my @modifiedDateArray = ("-d", "autoMunkiImporter", "-d", "modifiedDate", "-t", $modifiedDate);
+	setPlistObjectForce( $dataPlist, \@modifiedDateArray );
 	saveDefaults($dataPlist, $dataPlistPath);
 }
 
@@ -857,7 +890,8 @@ foreach $dataPlistPath (@dataPlists) {
 	# Replace the XML encoding of &
 	$url =~ s/&amp;/&/g;
 	
-	logMessage("stdout, log", "Initial URL: $url", $logFile);
+	my $initialURL = $url;
+	logMessage("stdout, log", "Initial URL: $initialURL", $logFile);
 	
 	# Some sites will return different content based off the user agent
 	# Optionally overwrite the default user agent if present in the plist
@@ -1216,7 +1250,7 @@ foreach $dataPlistPath (@dataPlists) {
 	
 		# Save a copy of the version into the data plist
 		$packagedVersion = perlValue(getPlistObject($pkgInfoPlist, "version"));
-		setPlistObject($dataPlist, "autoMunkiImporter", "corrospoindingVersion", $packagedVersion);
+		setPlistObject($dataPlist, "autoMunkiImporter", "modifiedDateCorrospoindingVersion", $packagedVersion);
 		saveDefaults($dataPlist, $dataPlistPath);
 	}
 	
@@ -1233,9 +1267,13 @@ foreach $dataPlistPath (@dataPlists) {
 	$subject = $subjectPrefix . " " . $name . " (v" . $packagedVersion . ") has been imported";
 	$message = $name . " (v" . $packagedVersion . ") has been imported into Munki.\n\nIt's pkginfo file is at $pkgInfoPlistPath.";
 	sendEmail(subject => $subject, message => $message);
-
-	updateStatus($name, "v$packagedVersion imported into Munki - PkgInfo Path: $pkgInfoPlistPath");
-	
+	recordNewVersion(name => $name, 
+	        		 version => $packagedVersion, 
+	        		 modifiedDate => $modifiedDate, 
+	        		 initialURL   => $initialURL, 
+	        		 finalURL     => $url, 
+	        		 pkginfoPath  => $pkgInfoPlistPath);
+		
 	###############################################################################
 	# Main App - Step 8: Optionally run makecatalogs
 	###############################################################################
