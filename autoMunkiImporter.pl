@@ -668,7 +668,7 @@ sub sendEmail {
 }
 
 sub updateStatus {
-	my ($message, $name) = @_;
+	my ($name, $message) = @_;
 
 	my $now = time();
 	
@@ -829,6 +829,7 @@ foreach $dataPlistPath (@dataPlists) {
 	eval { $disabled = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "disabled")); };
 	if ($disabled) {
 		logMessage("stdout, log", "Automatic Update Check is DISABLED. Exiting...", $logFile);
+		updateStatus($name, "Automatic Update Check is DISABLED. Exiting...");
 		next;
 	}
 	
@@ -845,6 +846,7 @@ foreach $dataPlistPath (@dataPlists) {
 	my $url = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "URLToMonitor"));
 	if ($url eq "") {
 		logMessage("stderr, log", "ERROR: URL is missing. Exiting...", $logFile);
+		updateStatus($name, "ERROR: URL is missing. Exiting...");
 		if ($dataPlistSourceIsDir) {
 			next;
 		} else {
@@ -871,7 +873,8 @@ foreach $dataPlistPath (@dataPlists) {
 	}
 	
 	if (! defined $url || $url eq "") {
-		logMessage("stderr, log", "ERROR: Can't determine final URL", $logFile);
+		logMessage("stderr, log", "ERROR: Can't determine final URL. Exiting...", $logFile);
+		updateStatus($name, "ERROR: Can't determine final URL. Exiting...");
 		$subject = $subjectPrefix . " ERROR: $name - Can't determine final URL";
 		$message = "Can't determine final URL. Script terminated...";
 		sendEmail(subject => $subject, message => $message);
@@ -916,6 +919,7 @@ foreach $dataPlistPath (@dataPlists) {
 	# Die if the HTTP Status code isn't 200 - success
 	if (! $httpCode && $url =~ /^http/) {
 		logMessage("stderr, log", "ERROR: Problem accessing file to download. The error and / or headers were\n$headers", $logFile);
+		updateStatus($name, "ERROR: Problem accessing file to download. Exiting...");
 		$subject = $subjectPrefix . " ERROR: $name - Problem accessing file to download";
 		$message = "There was a problem accessing the file to download. The URL $url returned the following error and / or headers:-\n$headers\n\nScript terminated...";
 		sendEmail(subject => $subject, message => $message);
@@ -929,6 +933,7 @@ foreach $dataPlistPath (@dataPlists) {
 	# Die if the modification date isn't set
 	if ($modifiedDate eq "") {
 		logMessage("stderr, log", "ERROR: Modification date of download not found. The headers were\n$headers", $logFile);
+		updateStatus($name, "ERROR: Modification date of download not found. Exiting...");
 		$subject = $subjectPrefix . " ERROR: $name - Modification Date not found";
 		$message = "Modification date of download not found, indicating a problem.\n\nThe URL $url returned the following headers\n$headers. Script terminated...";
 		sendEmail(subject => $subject, message => $message);
@@ -942,6 +947,8 @@ foreach $dataPlistPath (@dataPlists) {
 	# If just resetting the modified date, bail at this stage
 	if ($reset) {
 		updateLastModifiedDate($modifiedDate, $dataPlist, $dataPlistPath);
+		logMessage("stdout, log", "Modification date rest to current modification date of url", $logFile);
+		updateStatus($name, "Modification date rest to current modification date of url.");
 		next;
 	}
 	
@@ -960,6 +967,7 @@ foreach $dataPlistPath (@dataPlists) {
 	
 		if ($modDateAsTimestamp <= $currentPackagedVersionAsTimestamp) {
 			logMessage("stdout, log", "No new version of $name found. Exiting...", $logFile);
+			updateStatus($name, "No new version found.");
 			if (! $ignoreModDate) {
 				next;
 			}
@@ -980,6 +988,7 @@ foreach $dataPlistPath (@dataPlists) {
 	if (! grep( /^$ext$/, @supportedDownloadTypes ) ) {
 		# Download is in an unsupported format.
 		logMessage("stderr, log","ERROR: Download is in an unsupported format. Exiting...\n", $logFile);
+		updateStatus($name, "ERROR: Download is in an unsupported format. Exiting...");
 		$subject = $subjectPrefix . " ERROR: $name - Download is in an unsupported format";
 		$message = "URL implies that the download would be in an unsupported format ($url). Script terminated...";
 		sendEmail(subject => $subject, message => $message);
@@ -1016,6 +1025,7 @@ foreach $dataPlistPath (@dataPlists) {
 		system ("$tools{'cp'} -r \"$downloadFileName\" \"$tmpLocation\"");
 	
 		$message = "Download Only option was selected. File saved to: \"$tmpLocation\". Exiting...";
+		updateStatus($name, "Download only selected. File downloaded to $tmpLocation");
 		logMessage("log", $message, $logFile);
 		print $message . "\n";
 		next;
@@ -1057,6 +1067,7 @@ foreach $dataPlistPath (@dataPlists) {
 		if (! defined($hdiutilPlist) ) {
 			# Error reading the Plist. Display an error and exit
 			logMessage("stderr, log","ERROR: Can't mount disk image. Exiting...\n", $logFile);
+			updateStatus($name, "ERROR: Can't mount disk image. Exiting...");
 			$subject = $subjectPrefix . " ERROR: $name - Can't mount disk image.";
 			$message = "Can't read the plist that hdiutil generates when attempting to mount the disk image. The disk image downloaded from $url is most likely corrupt. Script terminated...\n\n";
 			sendEmail(subject => $subject, message => $message);		
@@ -1071,6 +1082,7 @@ foreach $dataPlistPath (@dataPlists) {
 		if ( ! defined($hdiutilPlist) || $#pathToMountPointKey < 0) {
 			# Error reading the Plist. Display an error and exit
 			logMessage("stderr, log","ERROR: Can't determine mount point of DMG. Exiting...\n", $logFile);
+			updateStatus($name, "ERROR: Can't determine mount point of DMG. Exiting...");
 			$subject = $subjectPrefix . " ERROR: $name - Can't determine mount point of DMG";
 			$message = "Can't determine the mount point of the disk image downloaded from $url. Script terminated...";
 			sendEmail(subject => $subject, message => $message);
@@ -1104,6 +1116,7 @@ foreach $dataPlistPath (@dataPlists) {
 	} else {
 		# Download is in an unsupported format - Should be caught in step 3, but here as a failsafe.
 		logMessage("stderr, log","ERROR: Download is in an unsupported format. Exiting...\n", $logFile);
+		updateStatus($name, "ERROR: Download is in an unsupported format. Exiting...");
 		$subject = $subjectPrefix . " ERROR: $name - Download is in an unsupported format";
 		$message = "Download is in an unsupported format ($downloadFileName). Script terminated...";
 		sendEmail(subject => $subject, message => $message);
@@ -1119,6 +1132,7 @@ foreach $dataPlistPath (@dataPlists) {
 	if (! -e "$target") {
 		# Can't find downloaded file to import into Munki.
 		logMessage("stderr, log","ERROR: Can't find item ($itemToImport) to import into Munki. Exiting...\n", $logFile);
+		updateStatus($name, "ERROR: Can't find item ($itemToImport) to import into Munki. Exiting...");
 		$subject = $subjectPrefix . " ERROR: $name - Can't find downloaded file to import into Munki";
 		$message = "Can't find item to import into Munki. Script terminated...\n\n$name looked for $itemToImport\n";
 		sendEmail(subject => $subject, message => $message);
@@ -1171,6 +1185,7 @@ foreach $dataPlistPath (@dataPlists) {
 	if ( ! defined($pkgInfoPlist)) {
 		# Error reading the Plist. Display an error and skip items that relied on it
 		logMessage("stderr, log", "ERROR: The Pkginfo plist can't be read. The import to Munki failed....", $logFile);
+		updateStatus($name, "ERROR: The Pkginfo plist can't be read. The import to Munki failed...");
 		$subject = $subjectPrefix . " ERROR: $name - Import to Munki Failed";
 		$message = "The Pkginfo plist can't be read. The import to Munki failed.\n";
 		sendEmail(subject => $subject, message => $message);
@@ -1218,6 +1233,8 @@ foreach $dataPlistPath (@dataPlists) {
 	$subject = $subjectPrefix . " " . $name . " (v" . $packagedVersion . ") has been imported";
 	$message = $name . " (v" . $packagedVersion . ") has been imported into Munki.\n\nIt's pkginfo file is at $pkgInfoPlistPath.";
 	sendEmail(subject => $subject, message => $message);
+
+	updateStatus($name, "v$packagedVersion imported into Munki - PkgInfo Path: $pkgInfoPlistPath");
 	
 	###############################################################################
 	# Main App - Step 8: Optionally run makecatalogs
