@@ -70,6 +70,7 @@ $tools{'plutil'} = "/usr/bin/plutil";
 my $logFile             = "/Library/Logs/autoMunkiImporter/autoMunkiImporter.log";
 my $logFileMaxSizeInMBs = 1;
 my $maxNoOfLogsToKeep   = 5;
+my $statusPlistPath     = "/Library/Logs/autoMunkiImporter/autoMunkiImporterStatus.plist";
 
 # Email - emailReports, From and To addresses can be overwritten by the data plist
 my $emailReports  = 1; # 1 = True, 0 = False;
@@ -91,6 +92,7 @@ my $dataPlistPath = undef;
 my $dataPlist = undef;
 my $type = undef;
 my $dataPlistSourceIsDir = 0; # Whether the data plist(s) came from a dir listing
+my $statusPlist = undef;
 
 # Email
 my $subject = "";
@@ -285,6 +287,21 @@ sub readDataPlist {
 		checkDataPlistForRequiredKeys($dataPlist);
 		return $dataPlist;
 	}
+}
+
+sub readStatusPlist {
+	my ($statusPlistPath) = @_;
+	my $statusPlist = undef;
+
+	if ( -e expandFilePath($statusPlistPath) ) {
+		$statusPlist = loadDefaults( expandFilePath($statusPlistPath) );
+	} 
+	
+	if ( ! defined ($statusPlist) ) {
+		$statusPlist = NSMutableDictionary->dictionary();
+	}
+
+	return $statusPlist;
 }
 
 sub checkDataPlistForRequiredKeys {
@@ -650,6 +667,27 @@ sub sendEmail {
 	}
 }
 
+sub updateStatus {
+	my ($message, $name) = @_;
+
+	my $now = time();
+	
+	# Data Plist
+	my @lastStatus_Data = ("-d", "autoMunkiImporter", "-d", "lastStatus", "-s", $message);
+	my @lastRunTime_Data = ("-d", "autoMunkiImporter", "-d", "lastRunTime", "-t", $now);
+	setPlistObjectForce( $dataPlist, \@lastStatus_Data );
+	setPlistObjectForce( $dataPlist, \@lastRunTime_Data );
+	saveDefaults( $dataPlist, $dataPlistPath );
+	
+	# Status Plist
+	my @lastStatus_Status = ("-d", $name, "-d", "lastStatus", "-s", $message);
+	my @lastRunTime_Status = ("-d", $name, "-d", "lastRunTime", "-t", $now);
+	setPlistObjectForce( $statusPlist, \@lastStatus_Status );
+	setPlistObjectForce( $statusPlist, \@lastRunTime_Status );
+	saveDefaults( $statusPlist, $statusPlistPath );
+	
+}
+
 sub updateLastModifiedDate {
 	my ($modifiedDate, $dataPlist, $dataPlistPath) = @_;
 	setPlistObject($dataPlist, "autoMunkiImporter", "modifiedDate", $modifiedDate);
@@ -756,6 +794,9 @@ if ($testScript) {
 	print "All tests passed...\n";
 	exit 0;
 }
+
+# Setup Status Plist
+$statusPlist = readStatusPlist($statusPlistPath);
 
 if (-d $dataPlistPath) {
 	# Path to a directory of plists
