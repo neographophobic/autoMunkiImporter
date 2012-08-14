@@ -42,6 +42,7 @@ use File::Basename;
 use File::Copy;
 use Getopt::Long;
 use Pod::Usage;
+use POSIX;
 
 ###############################################################################
 # User Editable Configuration Variables
@@ -70,6 +71,7 @@ $tools{'plutil'} = "/usr/bin/plutil";
 my $logFile             = "/Library/Logs/autoMunkiImporter/autoMunkiImporter.log";
 my $logFileMaxSizeInMBs = 1;
 my $maxNoOfLogsToKeep   = 5;
+my $statusPlistPath     = "/Library/Logs/autoMunkiImporter/autoMunkiImporterStatus.plist";
 
 # Email - emailReports, From and To addresses can be overwritten by the data plist
 my $emailReports  = 1; # 1 = True, 0 = False;
@@ -91,6 +93,7 @@ my $dataPlistPath = undef;
 my $dataPlist = undef;
 my $type = undef;
 my $dataPlistSourceIsDir = 0; # Whether the data plist(s) came from a dir listing
+my $statusPlist = undef;
 
 # Email
 my $subject = "";
@@ -285,6 +288,21 @@ sub readDataPlist {
 		checkDataPlistForRequiredKeys($dataPlist);
 		return $dataPlist;
 	}
+}
+
+sub readStatusPlist {
+	my ($statusPlistPath) = @_;
+	my $statusPlist = undef;
+
+	if ( -e expandFilePath($statusPlistPath) ) {
+		$statusPlist = loadDefaults( expandFilePath($statusPlistPath) );
+	} 
+	
+	if ( ! defined ($statusPlist) ) {
+		$statusPlist = NSMutableDictionary->dictionary();
+	}
+
+	return $statusPlist;
 }
 
 sub checkDataPlistForRequiredKeys {
@@ -568,7 +586,7 @@ sub findDownloadLinkFromSparkleFeed {
 		}
 		
 		if ($line =~ m/^\s*<\/item>/i) {
-			logMessage("stdout, log", "Checking: Date: $itemPubDate, Version: $itemVer, URL: $itemURL", $logFile);
+			logMessage("stdout, log", "Checking: Date: " . timestampToString($itemPubDate) . " ($itemPubDate), Version: $itemVer, URL: $itemURL", $logFile);
 			# End of an RSS item, so determine if we should consider it as the version to use
 			if (defined $itemVer && defined $itemURL && defined $itemPubDate) {
 				# Required elements were found
@@ -650,9 +668,63 @@ sub sendEmail {
 	}
 }
 
+sub updateStatus {
+	my ($name, $message) = @_;
+
+	my $now = time();
+	
+	# Data Plist
+	my @lastStatus_Data  = ("-d", "autoMunkiImporter", "-d", "lastStatus", "-s", $message);
+	my @lastRunTime_Data = ("-d", "autoMunkiImporter", "-d", "lastRunTime", "-t", $now);
+	setPlistObjectForce( $dataPlist, \@lastStatus_Data );
+	setPlistObjectForce( $dataPlist, \@lastRunTime_Data );
+	saveDefaults( $dataPlist, $dataPlistPath );
+	
+	# Status Plist
+	my @lastStatus_Status  = ("-d", $name, "-d", "lastStatus", "-s", $message);
+	my @lastRunTime_Status = ("-d", $name, "-d", "lastRunTime", "-t", $now);
+	setPlistObjectForce( $statusPlist, \@lastStatus_Status );
+	setPlistObjectForce( $statusPlist, \@lastRunTime_Status );
+	saveDefaults( $statusPlist, $statusPlistPath );
+}
+
+sub recordNewVersion {
+	my %args = @_;
+		
+	# Data Plist	
+	my @modifiedDate_Data = ("-d", "autoMunkiImporter", "-d", "Import History", "-d", $args{version}, "-d", "modifiedDate", "-t", $args{modifiedDate});
+	my @importDate_Data   = ("-d", "autoMunkiImporter", "-d", "Import History", "-d", $args{version}, "-d", "importDate", "-t", time());
+	my @initialURL_Data   = ("-d", "autoMunkiImporter", "-d", "Import History", "-d", $args{version}, "-d", "InitialURL", "-s", $args{initialURL});
+	my @finalURL_Data     = ("-d", "autoMunkiImporter", "-d", "Import History", "-d", $args{version}, "-d", "finalURL", "-s", $args{finalURL});
+	my @pkginfoPath_Data  = ("-d", "autoMunkiImporter", "-d", "Import History", "-d", $args{version}, "-d", "pkginfoPath", "-s", $args{pkginfoPath});
+	setPlistObjectForce( $dataPlist, \@modifiedDate_Data );
+	setPlistObjectForce( $dataPlist, \@importDate_Data );
+	setPlistObjectForce( $dataPlist, \@initialURL_Data );
+	setPlistObjectForce( $dataPlist, \@finalURL_Data );
+	setPlistObjectForce( $dataPlist, \@pkginfoPath_Data );
+	saveDefaults( $dataPlist, $dataPlistPath );	
+
+	# Status Plist	
+	my @modifiedDate_Status = ("-d", $args{name}, "-d", "Import History", "-d", $args{version}, "-d", "modifiedDate", "-t", $args{modifiedDate});
+	my @importDate_Status   = ("-d", $args{name}, "-d", "Import History", "-d", $args{version}, "-d", "importDate", "-t", time());
+	my @initialURL_Status   = ("-d", $args{name}, "-d", "Import History", "-d", $args{version}, "-d", "InitialURL", "-s", $args{initialURL});
+	my @finalURL_Status     = ("-d", $args{name}, "-d", "Import History", "-d", $args{version}, "-d", "finalURL", "-s", $args{finalURL});
+	my @pkginfoPath_Status  = ("-d", $args{name}, "-d", "Import History", "-d", $args{version}, "-d", "pkginfoPath", "-s", $args{pkginfoPath});
+	setPlistObjectForce( $statusPlist, \@modifiedDate_Status );
+	setPlistObjectForce( $statusPlist, \@importDate_Status );
+	setPlistObjectForce( $statusPlist, \@initialURL_Status );
+	setPlistObjectForce( $statusPlist, \@finalURL_Status );
+	setPlistObjectForce( $statusPlist, \@pkginfoPath_Status );
+	saveDefaults( $statusPlist, $statusPlistPath );	
+	
+	updateStatus($name, "v$args{version} imported into Munki - PkgInfo Path: $args{pkginfoPath}");
+
+}
+
 sub updateLastModifiedDate {
 	my ($modifiedDate, $dataPlist, $dataPlistPath) = @_;
-	setPlistObject($dataPlist, "autoMunkiImporter", "modifiedDate", $modifiedDate);
+	my @modifiedDateArray = ("-d", "autoMunkiImporter", "-d", "modifiedDate", "-t", $modifiedDate);
+	setPlistObjectForce( $dataPlist, \@modifiedDateArray );
 	saveDefaults($dataPlist, $dataPlistPath);
 }
 
@@ -707,6 +779,11 @@ sub getDataPlists {
 	} 
 }
 
+sub timestampToString {
+	my ($timestamp) = @_;
+	return strftime("%a, %e %b %Y %H:%M:%S %Z", localtime($timestamp));
+}
+
 ###############################################################################
 # Main App - Prep
 ###############################################################################
@@ -757,6 +834,9 @@ if ($testScript) {
 	exit 0;
 }
 
+# Setup Status Plist
+$statusPlist = readStatusPlist($statusPlistPath);
+
 if (-d $dataPlistPath) {
 	# Path to a directory of plists
 	getDataPlists($dataPlistPath);
@@ -788,6 +868,7 @@ foreach $dataPlistPath (@dataPlists) {
 	eval { $disabled = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "disabled")); };
 	if ($disabled) {
 		logMessage("stdout, log", "Automatic Update Check is DISABLED. Exiting...", $logFile);
+		updateStatus($name, "Automatic Update Check is DISABLED. Exiting...");
 		next;
 	}
 	
@@ -804,6 +885,7 @@ foreach $dataPlistPath (@dataPlists) {
 	my $url = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "URLToMonitor"));
 	if ($url eq "") {
 		logMessage("stderr, log", "ERROR: URL is missing. Exiting...", $logFile);
+		updateStatus($name, "ERROR: URL is missing. Exiting...");
 		if ($dataPlistSourceIsDir) {
 			next;
 		} else {
@@ -814,7 +896,8 @@ foreach $dataPlistPath (@dataPlists) {
 	# Replace the XML encoding of &
 	$url =~ s/&amp;/&/g;
 	
-	logMessage("stdout, log", "Initial URL: $url", $logFile);
+	my $initialURL = $url;
+	logMessage("stdout, log", "Initial URL: $initialURL", $logFile);
 	
 	# Some sites will return different content based off the user agent
 	# Optionally overwrite the default user agent if present in the plist
@@ -830,7 +913,8 @@ foreach $dataPlistPath (@dataPlists) {
 	}
 	
 	if (! defined $url || $url eq "") {
-		logMessage("stderr, log", "ERROR: Can't determine final URL", $logFile);
+		logMessage("stderr, log", "ERROR: Can't determine final URL. Exiting...", $logFile);
+		updateStatus($name, "ERROR: Can't determine final URL. Exiting...");
 		$subject = $subjectPrefix . " ERROR: $name - Can't determine final URL";
 		$message = "Can't determine final URL. Script terminated...";
 		sendEmail(subject => $subject, message => $message);
@@ -868,13 +952,15 @@ foreach $dataPlistPath (@dataPlists) {
 			# The Last-Modified header may not be on a new line, so find where it starts
 			# on the line, then take the rest of the line after it as the mod date
 			my $lastModifiedPosition = index($line, "Last-Modified");
-			$modifiedDate = substr($line, $lastModifiedPosition + 15);
+			my $lastModifiedDate = substr($line, $lastModifiedPosition + 15);
+			$modifiedDate = str2time($lastModifiedDate);
 		}
 	}
 	
 	# Die if the HTTP Status code isn't 200 - success
 	if (! $httpCode && $url =~ /^http/) {
 		logMessage("stderr, log", "ERROR: Problem accessing file to download. The error and / or headers were\n$headers", $logFile);
+		updateStatus($name, "ERROR: Problem accessing file to download. Exiting...");
 		$subject = $subjectPrefix . " ERROR: $name - Problem accessing file to download";
 		$message = "There was a problem accessing the file to download. The URL $url returned the following error and / or headers:-\n$headers\n\nScript terminated...";
 		sendEmail(subject => $subject, message => $message);
@@ -886,8 +972,9 @@ foreach $dataPlistPath (@dataPlists) {
 	}
 	
 	# Die if the modification date isn't set
-	if ($modifiedDate eq "") {
+	if ($modifiedDate eq "" || $modifiedDate == 0) {
 		logMessage("stderr, log", "ERROR: Modification date of download not found. The headers were\n$headers", $logFile);
+		updateStatus($name, "ERROR: Modification date of download not found. Exiting...");
 		$subject = $subjectPrefix . " ERROR: $name - Modification Date not found";
 		$message = "Modification date of download not found, indicating a problem.\n\nThe URL $url returned the following headers\n$headers. Script terminated...";
 		sendEmail(subject => $subject, message => $message);
@@ -901,24 +988,22 @@ foreach $dataPlistPath (@dataPlists) {
 	# If just resetting the modified date, bail at this stage
 	if ($reset) {
 		updateLastModifiedDate($modifiedDate, $dataPlist, $dataPlistPath);
+		logMessage("stdout, log", "Modification date rest to current modification date of url", $logFile);
+		updateStatus($name, "Modification date rest to current modification date of url.");
 		next;
 	}
 	
 	# Compare latest modification date to what we have already packaged
-	my $currentPackagedVersion = "";
-	my $currentPackagedVersionAsTimestamp = 0;
+	my $currentPackagedModifiedDate = "";
 	if (!$downloadOnly) {
-		eval { $currentPackagedVersion = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "modifiedDate")); };
-		my $modDateAsTimestamp = str2time($modifiedDate);
-		if ($currentPackagedVersion ne "") {
-			$currentPackagedVersionAsTimestamp = str2time($currentPackagedVersion);
-		}
+		eval { $currentPackagedModifiedDate = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "modifiedDate")); };
 		
-		logMessage("stdout, log", "Modification Date of Download:                     $modifiedDate ($modDateAsTimestamp)", $logFile);
-		logMessage("stdout, log", "Modification Date of Previously Packaged Download: $currentPackagedVersion ($currentPackagedVersionAsTimestamp)", $logFile);
+		logMessage("stdout, log", "Modification Date of Download:                     " . timestampToString($modifiedDate) . " ($modifiedDate)", $logFile);
+		logMessage("stdout, log", "Modification Date of Previously Packaged Download: " . timestampToString($currentPackagedModifiedDate) . " ($currentPackagedModifiedDate)", $logFile);
 	
-		if ($modDateAsTimestamp <= $currentPackagedVersionAsTimestamp) {
+		if ($modifiedDate <= $currentPackagedModifiedDate) {
 			logMessage("stdout, log", "No new version of $name found. Exiting...", $logFile);
+			updateStatus($name, "No new version found.");
 			if (! $ignoreModDate) {
 				next;
 			}
@@ -939,6 +1024,7 @@ foreach $dataPlistPath (@dataPlists) {
 	if (! grep( /^$ext$/, @supportedDownloadTypes ) ) {
 		# Download is in an unsupported format.
 		logMessage("stderr, log","ERROR: Download is in an unsupported format. Exiting...\n", $logFile);
+		updateStatus($name, "ERROR: Download is in an unsupported format. Exiting...");
 		$subject = $subjectPrefix . " ERROR: $name - Download is in an unsupported format";
 		$message = "URL implies that the download would be in an unsupported format ($url). Script terminated...";
 		sendEmail(subject => $subject, message => $message);
@@ -975,6 +1061,7 @@ foreach $dataPlistPath (@dataPlists) {
 		system ("$tools{'cp'} -r \"$downloadFileName\" \"$tmpLocation\"");
 	
 		$message = "Download Only option was selected. File saved to: \"$tmpLocation\". Exiting...";
+		updateStatus($name, "Download only selected. File downloaded to $tmpLocation");
 		logMessage("log", $message, $logFile);
 		print $message . "\n";
 		next;
@@ -1016,6 +1103,7 @@ foreach $dataPlistPath (@dataPlists) {
 		if (! defined($hdiutilPlist) ) {
 			# Error reading the Plist. Display an error and exit
 			logMessage("stderr, log","ERROR: Can't mount disk image. Exiting...\n", $logFile);
+			updateStatus($name, "ERROR: Can't mount disk image. Exiting...");
 			$subject = $subjectPrefix . " ERROR: $name - Can't mount disk image.";
 			$message = "Can't read the plist that hdiutil generates when attempting to mount the disk image. The disk image downloaded from $url is most likely corrupt. Script terminated...\n\n";
 			sendEmail(subject => $subject, message => $message);		
@@ -1030,6 +1118,7 @@ foreach $dataPlistPath (@dataPlists) {
 		if ( ! defined($hdiutilPlist) || $#pathToMountPointKey < 0) {
 			# Error reading the Plist. Display an error and exit
 			logMessage("stderr, log","ERROR: Can't determine mount point of DMG. Exiting...\n", $logFile);
+			updateStatus($name, "ERROR: Can't determine mount point of DMG. Exiting...");
 			$subject = $subjectPrefix . " ERROR: $name - Can't determine mount point of DMG";
 			$message = "Can't determine the mount point of the disk image downloaded from $url. Script terminated...";
 			sendEmail(subject => $subject, message => $message);
@@ -1063,6 +1152,7 @@ foreach $dataPlistPath (@dataPlists) {
 	} else {
 		# Download is in an unsupported format - Should be caught in step 3, but here as a failsafe.
 		logMessage("stderr, log","ERROR: Download is in an unsupported format. Exiting...\n", $logFile);
+		updateStatus($name, "ERROR: Download is in an unsupported format. Exiting...");
 		$subject = $subjectPrefix . " ERROR: $name - Download is in an unsupported format";
 		$message = "Download is in an unsupported format ($downloadFileName). Script terminated...";
 		sendEmail(subject => $subject, message => $message);
@@ -1078,6 +1168,7 @@ foreach $dataPlistPath (@dataPlists) {
 	if (! -e "$target") {
 		# Can't find downloaded file to import into Munki.
 		logMessage("stderr, log","ERROR: Can't find item ($itemToImport) to import into Munki. Exiting...\n", $logFile);
+		updateStatus($name, "ERROR: Can't find item ($itemToImport) to import into Munki. Exiting...");
 		$subject = $subjectPrefix . " ERROR: $name - Can't find downloaded file to import into Munki";
 		$message = "Can't find item to import into Munki. Script terminated...\n\n$name looked for $itemToImport\n";
 		sendEmail(subject => $subject, message => $message);
@@ -1130,6 +1221,7 @@ foreach $dataPlistPath (@dataPlists) {
 	if ( ! defined($pkgInfoPlist)) {
 		# Error reading the Plist. Display an error and skip items that relied on it
 		logMessage("stderr, log", "ERROR: The Pkginfo plist can't be read. The import to Munki failed....", $logFile);
+		updateStatus($name, "ERROR: The Pkginfo plist can't be read. The import to Munki failed...");
 		$subject = $subjectPrefix . " ERROR: $name - Import to Munki Failed";
 		$message = "The Pkginfo plist can't be read. The import to Munki failed.\n";
 		sendEmail(subject => $subject, message => $message);
@@ -1160,7 +1252,7 @@ foreach $dataPlistPath (@dataPlists) {
 	
 		# Save a copy of the version into the data plist
 		$packagedVersion = perlValue(getPlistObject($pkgInfoPlist, "version"));
-		setPlistObject($dataPlist, "autoMunkiImporter", "corrospoindingVersion", $packagedVersion);
+		setPlistObject($dataPlist, "autoMunkiImporter", "modifiedDateCorrospoindingVersion", $packagedVersion);
 		saveDefaults($dataPlist, $dataPlistPath);
 	}
 	
@@ -1177,7 +1269,13 @@ foreach $dataPlistPath (@dataPlists) {
 	$subject = $subjectPrefix . " " . $name . " (v" . $packagedVersion . ") has been imported";
 	$message = $name . " (v" . $packagedVersion . ") has been imported into Munki.\n\nIt's pkginfo file is at $pkgInfoPlistPath.";
 	sendEmail(subject => $subject, message => $message);
-	
+	recordNewVersion(name => $name, 
+	        		 version => $packagedVersion, 
+	        		 modifiedDate => $modifiedDate, 
+	        		 initialURL   => $initialURL, 
+	        		 finalURL     => $url, 
+	        		 pkginfoPath  => $pkgInfoPlistPath);
+		
 	###############################################################################
 	# Main App - Step 8: Optionally run makecatalogs
 	###############################################################################
