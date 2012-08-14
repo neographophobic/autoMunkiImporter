@@ -994,7 +994,7 @@ foreach $dataPlistPath (@dataPlists) {
 	}
 	
 	# Compare latest modification date to what we have already packaged
-	my $currentPackagedModifiedDate = "";
+	my $currentPackagedModifiedDate = 0;
 	if (!$downloadOnly) {
 		eval { $currentPackagedModifiedDate = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "modifiedDate")); };
 		
