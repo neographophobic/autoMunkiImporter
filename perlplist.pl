@@ -1193,7 +1193,8 @@ sub perlValue {
     my $hex = $object->description()->UTF8String();
     $return_value = hexToBase64($hex);
   } elsif ( objectType ( $object ) eq "NSCFDate" ) {
-    $return_value = $object->descriptionWithLocale_(NSLocale->currentLocale())->UTF8String();
+	$return_value = $object->timeIntervalSince1970(); # Unix timestamp
+    # $return_value = $object->descriptionWithLocale_(NSLocale->currentLocale())->UTF8String(); # - Formatted to the local timezone
   } else {
     $return_value = $object->description()->UTF8String();
     $return_value =~ s/&/&amp;/g;

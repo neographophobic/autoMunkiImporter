@@ -42,6 +42,7 @@ use File::Basename;
 use File::Copy;
 use Getopt::Long;
 use Pod::Usage;
+use POSIX;
 
 ###############################################################################
 # User Editable Configuration Variables
@@ -585,7 +586,7 @@ sub findDownloadLinkFromSparkleFeed {
 		}
 		
 		if ($line =~ m/^\s*<\/item>/i) {
-			logMessage("stdout, log", "Checking: Date: $itemPubDate, Version: $itemVer, URL: $itemURL", $logFile);
+			logMessage("stdout, log", "Checking: Date: " . timestampToString($itemPubDate) . " ($itemPubDate), Version: $itemVer, URL: $itemURL", $logFile);
 			# End of an RSS item, so determine if we should consider it as the version to use
 			if (defined $itemVer && defined $itemURL && defined $itemPubDate) {
 				# Required elements were found
@@ -778,6 +779,11 @@ sub getDataPlists {
 	} 
 }
 
+sub timestampToString {
+	my ($timestamp) = @_;
+	return strftime("%a, %e %b %Y %H:%M:%S %Z", localtime($timestamp));
+}
+
 ###############################################################################
 # Main App - Prep
 ###############################################################################
@@ -946,7 +952,8 @@ foreach $dataPlistPath (@dataPlists) {
 			# The Last-Modified header may not be on a new line, so find where it starts
 			# on the line, then take the rest of the line after it as the mod date
 			my $lastModifiedPosition = index($line, "Last-Modified");
-			$modifiedDate = substr($line, $lastModifiedPosition + 15);
+			my $lastModifiedDate = substr($line, $lastModifiedPosition + 15);
+			$modifiedDate = str2time($lastModifiedDate);
 		}
 	}
 	
@@ -965,7 +972,7 @@ foreach $dataPlistPath (@dataPlists) {
 	}
 	
 	# Die if the modification date isn't set
-	if ($modifiedDate eq "") {
+	if ($modifiedDate eq "" || $modifiedDate == 0) {
 		logMessage("stderr, log", "ERROR: Modification date of download not found. The headers were\n$headers", $logFile);
 		updateStatus($name, "ERROR: Modification date of download not found. Exiting...");
 		$subject = $subjectPrefix . " ERROR: $name - Modification Date not found";
@@ -987,19 +994,14 @@ foreach $dataPlistPath (@dataPlists) {
 	}
 	
 	# Compare latest modification date to what we have already packaged
-	my $currentPackagedVersion = "";
-	my $currentPackagedVersionAsTimestamp = 0;
+	my $currentPackagedModifiedDate = "";
 	if (!$downloadOnly) {
-		eval { $currentPackagedVersion = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "modifiedDate")); };
-		my $modDateAsTimestamp = str2time($modifiedDate);
-		if ($currentPackagedVersion ne "") {
-			$currentPackagedVersionAsTimestamp = str2time($currentPackagedVersion);
-		}
+		eval { $currentPackagedModifiedDate = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "modifiedDate")); };
 		
-		logMessage("stdout, log", "Modification Date of Download:                     $modifiedDate ($modDateAsTimestamp)", $logFile);
-		logMessage("stdout, log", "Modification Date of Previously Packaged Download: $currentPackagedVersion ($currentPackagedVersionAsTimestamp)", $logFile);
+		logMessage("stdout, log", "Modification Date of Download:                     " . timestampToString($modifiedDate) . " ($modifiedDate)", $logFile);
+		logMessage("stdout, log", "Modification Date of Previously Packaged Download: " . timestampToString($currentPackagedModifiedDate) . " ($currentPackagedModifiedDate)", $logFile);
 	
-		if ($modDateAsTimestamp <= $currentPackagedVersionAsTimestamp) {
+		if ($modifiedDate <= $currentPackagedModifiedDate) {
 			logMessage("stdout, log", "No new version of $name found. Exiting...", $logFile);
 			updateStatus($name, "No new version found.");
 			if (! $ignoreModDate) {
