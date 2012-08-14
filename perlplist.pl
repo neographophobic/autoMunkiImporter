@@ -553,19 +553,19 @@ sub setPlistObjectForce {
 
     if ( ! $$do_I_exist ) {
       $make_change = 1;
-      print "Adding: @keyesIndexesSoFar (value type to be added: $data_type_token).\n";
+      print "Adding: @keyesIndexesSoFar (value type to be added: $data_type_token).\n" if $debug;
     } else {
       if ( $data_type_token eq $perlplist_dict_token ) {
         if ( ! $do_I_exist->isKindOfClass_( NSDictionary->class ) ) {
           $make_change = 1;
-          print "Should be dictionary but isn't: @keyesIndexesSoFar\n";
+          print "Should be dictionary but isn't: @keyesIndexesSoFar\n" if $debug;
         } else {
           $parentContainer = $do_I_exist;
         }
       } elsif ( $data_type_token eq $perlplist_array_token or $data_type_token eq $perlplist_array_insert_token ) {
         if ( ! $do_I_exist->isKindOfClass_( NSArray->class ) ) {
           $make_change = 1;
-          print "Should be array but isn't: @keyesIndexesSoFar\n";
+          print "Should be array but isn't: @keyesIndexesSoFar\n" if $debug;
         } else {
           $parentContainer = $do_I_exist;
         }
@@ -596,7 +596,7 @@ sub setPlistObjectForce {
       } elsif ( $data_type_token eq $perlplist_string_token ) {
         $addMe =  $objectToSet;
       } else {
-        print "ERROR perlplist.pl, Unknown token type! $data_type_token\n";
+        print STDERR "ERROR perlplist.pl, Unknown token type! $data_type_token\n";
       }
 
       if ( $last_container_type eq $perlplist_array_token or $last_container_type eq $perlplist_array_insert_token ) {
