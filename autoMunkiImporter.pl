@@ -49,7 +49,7 @@ use POSIX;
 ###############################################################################
 
 # Default User Agent to use (Safari 5.1.3 from 10.7.3) can be overwritten
-my $userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/534.55.3 (KHTML, like Gecko) Version/5.1.3 Safari/534.53.10";
+my $defaultUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/534.55.3 (KHTML, like Gecko) Version/5.1.3 Safari/534.53.10";
 
 # Declare paths to required tools
 my %tools = ();
@@ -114,6 +114,9 @@ my $testScript = 0; # Test the script has the appropriate items (0 = false)
 
 # App Name
 my $name = undef;
+
+# User Agent
+my $userAgent = $defaultUserAgent;
 
 # Supported Download Types
 my @supportedDownloadTypes = ("pkg", "mpkg", "dmg", "zip", "tar", "tar.gz", "tgz", "tbz");
@@ -484,6 +487,8 @@ sub findDownloadLinkOnPage {
 	# Download the page, using our provided user agent
 	my $mech = WWW::Mechanize->new();
 	$mech->agent($userAgent);
+	logMessage("stdout, log", "Using User Agent: " . $mech->agent, $logFile);
+
 	eval { $mech->get($url); };
 	if ($@) {
 		logMessage("stderr, log", "ERROR: Can't download content of URL. Error was: $@", $logFile);
@@ -901,6 +906,7 @@ foreach $dataPlistPath (@dataPlists) {
 	
 	# Some sites will return different content based off the user agent
 	# Optionally overwrite the default user agent if present in the plist
+	$userAgent = $defaultUserAgent;
 	eval { $userAgent = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "userAgent")); };
 	logMessage("stdout, log", "Determining Final URL...", $logFile);
 	
