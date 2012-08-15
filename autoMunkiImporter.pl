@@ -1023,11 +1023,14 @@ foreach $dataPlistPath (@dataPlists) {
 	###############################################################################
 	
 	# Sanity check download to ensure it's of a supported type
+	my $validExtension = 0; 
+	foreach my $supportedDownloadType(@supportedDownloadTypes) {
+		if ($url =~ m/($supportedDownloadType)$/) {
+			$validExtension = 1;	
+		}
+	}
 	
-	# Match a dot, followed by any number of non-dots until the end of the line.
-	$url =~ /(\.[^.]+)$/;
-	my $ext = substr($&, 1); # Get the match, and trim the full stop
-	if (! grep( /^$ext$/, @supportedDownloadTypes ) ) {
+	if (! $validExtension) {
 		# Download is in an unsupported format.
 		logMessage("stderr, log","ERROR: Download is in an unsupported format. Exiting...\n", $logFile);
 		updateStatus($name, "ERROR: Download is in an unsupported format. Exiting...");
