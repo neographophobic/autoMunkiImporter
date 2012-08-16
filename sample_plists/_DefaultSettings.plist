@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>userAgent</key>
+	<string>Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_4) AppleWebKit/534.57.2 (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2</string>
+	<key>logFile</key>
+	<string>/Library/Logs/autoMunkiImporter/autoMunkiImporter.log</string>
+	<key>logFileMaxSizeInMBs</key>
+	<integer>1</integer>
+	<key>maxNoOfLogsToKeep</key>
+	<integer>5</integer>
+	<key>statusPlistPath</key>
+	<string>/Library/Logs/autoMunkiImporter/autoMunkiImporterStatus.plist</string>
+	<key>emailReports</key>
+	<true/>
+	<key>smtpServer</key>
+	<string>replace_me</string>
+	<key>fromAddress</key>
+	<string>replace_me@example.com</string>
+	<key>toAddress</key>
+	<string>replace_me@example.com</string>
+	<key>subjectPrefix</key>
+	<string>[Auto Munki Import]</string>
+	<key>makecatalogs</key>
+	<true/>
+	<key>version</key>
+	<integer>1</integer>
+</dict>
+</plist>

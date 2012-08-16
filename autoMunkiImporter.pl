@@ -48,8 +48,8 @@ use POSIX;
 # User Editable Configuration Variables
 ###############################################################################
 
-# Default User Agent to use (Safari 5.1.3 from 10.7.3) can be overwritten
-my $defaultUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/534.55.3 (KHTML, like Gecko) Version/5.1.3 Safari/534.53.10";
+# Default User Settings file
+my $defaultSettingsPlistPath = "/Library/Application Support/autoMunkiImporter/_DefaultSettings.plist";
 
 # Declare paths to required tools
 my %tools = ();
@@ -67,22 +67,6 @@ $tools{'cp'} = "/bin/cp";
 $tools{'yes'} = "/usr/bin/yes";
 $tools{'plutil'} = "/usr/bin/plutil";
 
-# Logs - logFile can be overwritten by the data plist
-my $logFile             = "/Library/Logs/autoMunkiImporter/autoMunkiImporter.log";
-my $logFileMaxSizeInMBs = 1;
-my $maxNoOfLogsToKeep   = 5;
-my $statusPlistPath     = "/Library/Logs/autoMunkiImporter/autoMunkiImporterStatus.plist";
-
-# Email - emailReports, From and To addresses can be overwritten by the data plist
-my $emailReports  = 1; # 1 = True, 0 = False;
-my $smtpServer    = "REPLACE_ME";
-my $fromAddress   = 'REPLACE_ME@example.com'; 
-my $toAddress     = 'REPLACE_ME@example.com';
-my $subjectPrefix = "[Auto Munki Import]";
-
-# Make Catalogs? - Can be overwritten by the data plist
-my $makecatalogs = 1; # 1 = True, 0 = False;
-
 ###############################################################################
 # Configuration Variables - Don't change
 ###############################################################################
@@ -93,7 +77,12 @@ my $dataPlistPath = undef;
 my $dataPlist = undef;
 my $type = undef;
 my $dataPlistSourceIsDir = 0; # Whether the data plist(s) came from a dir listing
+
+# Status Plist
 my $statusPlist = undef;
+
+# Default User Settings Plist
+my $defaultSettingsPlist = undef;
 
 # Email
 my $subject = "";
@@ -112,11 +101,19 @@ my $ignoreModDate = 0; # Ignore modification date (0 = false)
 my $showScriptVersion = 0; # Show script version (0 = false)
 my $testScript = 0; # Test the script has the appropriate items (0 = false)
 
-# App Name
-my $name = undef;
-
-# User Agent
-my $userAgent = $defaultUserAgent;
+# Global Variables for Default User Settings
+my $name = undef;					# App Name for item being imported
+my $userAgent = undef; 				# Web User Agent to present to sites
+my $logFile = undef;				# Path to log file
+my $logFileMaxSizeInMBs = undef;	# Upper size of log files before they are rolled
+my $maxNoOfLogsToKeep = undef;		# No of log files to preserve
+my $emailReports = undef;			# Whether to email reports (0 = false, 1 = true)
+my $fromAddress = undef;			# From email address for reports
+my $toAddress = undef				# To email address for reports
+my $smtpServer = undef;				# SMTP Server to use for email reports
+my $subjectPrefix = undef;			# Prefix for subject line of email reports
+my $statusPlistPath = undef;		# Path to the status plist
+my $makecatalogs = undef;			# Whether to run makecatalogs (0 = false, 1 = true)
 
 # Supported Download Types
 my @supportedDownloadTypes = ("pkg", "mpkg", "dmg", "zip", "tar", "tar.gz", "tgz", "tbz");
@@ -137,12 +134,11 @@ sub checkPerlDependencies {
 	eval { require $perlPlistLib;  }; $missingDependencies = 1 if $@;
 	
 	if ($missingDependencies) {
-		logMessage("stderr, log", "ERROR: Required Perl Modules were not found. Please ensure that Date::Parse, Mail::Mailer, URI::Escape, URI::URL, and WWW::Mechanize are installed.", $logFile);
-		logMessage("stderr, log", " - perlplist.pl also needs to be in the same directory as this script.", $logFile);
+		logMessage("stderr", "ERROR: Required Perl Modules were not found. Please ensure that Date::Parse, Mail::Mailer, URI::Escape, URI::URL, and WWW::Mechanize are installed.", "/dev/null");
+		logMessage("stderr", " - perlplist.pl also needs to be in the same directory as this script.", "/dev/null");
 		exit 1;
 	} else {
 		use Date::Parse;
-		$logFile = expandFilePath($logFile);
 		return 1;
 	}
 	
@@ -308,6 +304,20 @@ sub readStatusPlist {
 	return $statusPlist;
 }
 
+sub readDefaultSettingsPlist {
+	my ($defaultSettingsPlistPath) = @_;
+
+	my $defaultSettingsPlist = loadDefaults( expandFilePath($defaultSettingsPlistPath) );
+	if ( ! defined($defaultSettingsPlist)) {
+		# Error reading the Plist. Display an error and exit
+		logMessage("stderr", "ERROR: The default settings plist ($defaultSettingsPlistPath) can't be parsed", "/dev/null");
+		exit 1;
+	}
+
+	checkDefaultSettingsPlist($defaultSettingsPlist);
+	return $defaultSettingsPlist;
+}
+
 sub checkDataPlistForRequiredKeys {
 	my ($dataPlist) = @_;
 	
@@ -359,6 +369,23 @@ sub getType {
 		if ($dataPlistSourceIsDir) {
 			next;
 		} else {
+			exit 1;
+		}
+	}
+}
+
+sub checkDefaultSettingsPlist {
+	my ($defaultSettingsPlist) = @_;
+	
+	my @expectedKeys = ("userAgent", "logFile", "logFileMaxSizeInMBs", "maxNoOfLogsToKeep", 
+						"statusPlistPath", "emailReports", "smtpServer", "fromAddress", 
+						"toAddress", "subjectPrefix", "makecatalogs", "version");
+
+	foreach my $key (@expectedKeys) {
+		my $dummyVar = "";
+		eval { $dummyVar = perlValue(getPlistObject($defaultSettingsPlist, "$key")); }; 
+		if ($dummyVar eq "" || $dummyVar =~ /REPLACE_ME/i) {
+			logMessage("stderr", "ERROR: Key: $key does not have an appropriate value in the default settings plist. Exiting...", $logFile);
 			exit 1;
 		}
 	}
@@ -649,13 +676,8 @@ sub addTrailingSlash {
 
 sub sendEmail {
 	my %args = @_;
-
-	eval { $emailReports = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "emailReports")); };
-
+	
 	if ($emailReports) {
-		# Override defaults with values from data plist if present
-		eval { $fromAddress = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "emailFrom")); };
-		eval { $toAddress = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "emailTo")); };
 
 		my $mailer = new Mail::Mailer 'smtp', Server => $smtpServer;
 	
@@ -789,17 +811,42 @@ sub timestampToString {
 	return strftime("%a, %e %b %Y %H:%M:%S %Z", localtime($timestamp));
 }
 
+sub defaultSettings {
+	my ($defaultSettingsPlist) = @_;
+	
+	# Logging
+	$logFile = perlValue(getPlistObject($defaultSettingsPlist, "logFile"));
+	$logFile = expandFilePath($logFile);
+	$logFileMaxSizeInMBs = perlValue(getPlistObject($defaultSettingsPlist, "logFileMaxSizeInMBs"));
+	$maxNoOfLogsToKeep = perlValue(getPlistObject($defaultSettingsPlist, "maxNoOfLogsToKeep"));
+	
+	# User Agent
+	$userAgent = perlValue(getPlistObject($defaultSettingsPlist, "userAgent"));
+
+	# Email
+	$emailReports = perlValue(getPlistObject($defaultSettingsPlist, "emailReports"));
+	$smtpServer = perlValue(getPlistObject($defaultSettingsPlist, "smtpServer"));
+	$fromAddress = perlValue(getPlistObject($defaultSettingsPlist, "fromAddress"));
+	$toAddress = perlValue(getPlistObject($defaultSettingsPlist, "toAddress"));
+	$subjectPrefix = perlValue(getPlistObject($defaultSettingsPlist, "subjectPrefix"));
+
+	# Status Plist
+	$statusPlistPath = perlValue(getPlistObject($defaultSettingsPlist, "statusPlistPath"));
+
+	# Make Catalogs
+	$makecatalogs = perlValue(getPlistObject($defaultSettingsPlist, "makecatalogs"));
+}
+
 ###############################################################################
 # Main App - Prep
 ###############################################################################
 
 # Check Pre-reqs are meet
 checkPerlDependencies() or die;
-checkMunkiRepoIsAvailable() or die;
-checkTools() or die;
 
 # Handle Command Line options
 GetOptions ('data=s'     	=> \$dataPlistPath, 
+			'settings=s'	=> \$defaultSettingsPlistPath,
 			'download'   	=> \$downloadOnly, 
 			'verbose|v'  	=> \$verbose, 
 			'progress|p'	=> \$progress,
@@ -818,19 +865,21 @@ if ($showScriptVersion) {
 	exit 0;
 }
 
-# Check email details have been set
-if ($smtpServer eq "REPLACE_ME" || $fromAddress eq 'REPLACE_ME@example.com' || $toAddress eq 'REPLACE_ME@example.com') {
-	logMessage("stderr", "ERROR: The default smtpServer, emailTo and emailFrom variables need to be set within the script...", $logFile);
-	exit 1;
-}
-
 # Check $dataPlistPath was set, and that a file exists at the location 
 if (! defined($dataPlistPath) || ! -e $dataPlistPath) {
 	# No argument, or does not exist, bail showing usage
-	logMessage("stderr", "ERROR: The data plist needs to be provided via a command line argument of --data /path/to/data.plist", $logFile);
+	logMessage("stderr", "ERROR: The data plist (or directory of plists) needs to be provided via a command line argument of --data /path/to/data.plist", "/dev/null");
 	pod2usage(1);
 	exit 1;
 }
+
+# Get default settings
+$defaultSettingsPlist = readDefaultSettingsPlist($defaultSettingsPlistPath);
+defaultSettings($defaultSettingsPlist);
+
+# Check Munki Repo is available, and that all of the required tools are also available
+checkMunkiRepoIsAvailable() or die;
+checkTools() or die;
 
 # Check paths are writable
 checkPermissions();
@@ -854,19 +903,27 @@ if (-d $dataPlistPath) {
 
 # Loop through each of the data plists that have been found and process them
 foreach $dataPlistPath (@dataPlists) {
+	# Reset the default settings (which maybe overwritten by the dataPlist
+	defaultSettings($defaultSettingsPlist);
+
 	# Read the data plist, which contains config for this script
 	$dataPlist = readDataPlist($dataPlistPath);
 	
 	# Get product name
 	$name = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "name"));
-	# Get optional Log File name (overwriting the one in this script)
-	eval { $logFile = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "logFile")); };
-	
+
+	# Get optional Log File name (overwriting the one in the default settings plist)
+	eval { $logFile = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "logFile")); };	
 	# Prepare the log for use
 	$logFile = expandFilePath($logFile);
 	prepareLog($logFile);
 	logMessage("stdout, log", "App Name: $name", $logFile);
 	logMessage("stdout, log", "Processing Type: $type", $logFile);
+
+	# Get optional email settings (overwriting the ones in the default settings plist)
+	eval { $emailReports = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "emailReports")); };
+	eval { $fromAddress = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "emailFrom")); };
+	eval { $toAddress = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "emailTo")); };
 	
 	# Check for optional disabled key
 	my $disabled = 0; # False
@@ -906,7 +963,6 @@ foreach $dataPlistPath (@dataPlists) {
 	
 	# Some sites will return different content based off the user agent
 	# Optionally overwrite the default user agent if present in the plist
-	$userAgent = $defaultUserAgent;
 	eval { $userAgent = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "userAgent")); };
 	logMessage("stdout, log", "Determining Final URL...", $logFile);
 	
@@ -1317,6 +1373,7 @@ autoMunkiImporter.pl --data /path/to/data[.plist] [options]
 	--ignoreModDate				Ignore the modified date and version info from the data plist
 	--progress				Prints progress information to STDOUT
 	--reset					Resets the modified date for an app
+	--settings /path/to/settings.plist	Optional path to a default settings plist
 	--test					Tests that the script has all of the required items and rights
 	--verbose				Show verbose output to STDOUT
 	--version				Prints scripts version to STDOUT
@@ -1357,6 +1414,12 @@ Reports progress of the script to STDOUT
 Resets the modified date of an app to the current modification date, without downloading or 
 importing the item into Munki. Use this when the latest version of an app is in your Munki repo, so 
 that this script doesn't attempt to re add it, of if you want to skip a version.
+
+=item B<--settings /path/to/settings.plist>
+
+Optional path to a default settings plist. If not provided /Library/Application Support/autoMunkiImporter/_DefaultConfig.plist 
+is used. This plist contains the default settings for the script, some of which can be overridden by
+the data plists.
 
 =item B<--test>
 
