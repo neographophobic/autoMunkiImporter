@@ -1606,6 +1606,66 @@ and dev, not prod.
  </dict>
  </plist>
 
+=head1 DEFAULT SETTINGS PLIST
+
+The default settings plist contains configuration for the script. It has a series of required keys.
+
+=head2 REQUIRED KEYS
+
+=over 8
+
+=item B<userAgent> <string>
+
+User Agent string to use. Recommendation is Safari's User Agent for your primary OS.
+
+=item B<logFile> <string>
+
+Path to the log file
+
+=item B<logFileMaxSizeInMBs> <number>
+
+Size in MBs that log files can grow to until they are rolled.
+
+=item B<maxNoOfLogsToKeep> <number>
+
+Maximum number of logs to keep.
+
+=item B<statusPlistPath> <string>
+
+Path to status plist, which gives a summary of all apps being monitored.
+
+=item B<emailReports> <boolean>
+
+Whether email should be sent.
+
+=item B<smtpServer> <string>
+
+SMTP server to use for sending email. Needed regardless of whether emailReports is true or false.
+
+=item B<fromAddress> <string>
+
+From email address to use for sending email. Needed regardless of whether emailReports is true or 
+false.
+
+=item B<toAddress> <string>
+
+To email address to use for receiving email. Needed regardless of whether emailReports is true or 
+false.
+
+=item B<subjectPrefix> <string>
+
+Prefix to add to email subject lines. Needed regardless of whether emailReports is true or false.
+
+=item B<makecatalogs> <boolean>
+
+Whether makecatalogs should be run at the end of each import
+
+=item B<version> <number>
+
+Version number of the settings plist. This should be 1.
+
+=back
+
 =head1 DEPENDENCIES
 
 This perl script requires the following perl modules to be installed:-
