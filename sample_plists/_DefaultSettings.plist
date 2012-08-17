@@ -24,7 +24,5 @@
 	<string>[Auto Munki Import]</string>
 	<key>makecatalogs</key>
 	<true/>
-	<key>version</key>
-	<integer>1</integer>
 </dict>
 </plist>

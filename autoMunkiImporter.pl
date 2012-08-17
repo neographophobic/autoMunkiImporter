@@ -379,7 +379,7 @@ sub checkDefaultSettingsPlist {
 	
 	my @expectedKeys = ("userAgent", "logFile", "logFileMaxSizeInMBs", "maxNoOfLogsToKeep", 
 						"statusPlistPath", "emailReports", "smtpServer", "fromAddress", 
-						"toAddress", "subjectPrefix", "makecatalogs", "version");
+						"toAddress", "subjectPrefix", "makecatalogs");
 
 	foreach my $key (@expectedKeys) {
 		my $dummyVar = "";
@@ -1658,10 +1658,6 @@ Prefix to add to email subject lines. Needed regardless of whether emailReports 
 =item B<makecatalogs> <boolean>
 
 Whether makecatalogs should be run at the end of each import
-
-=item B<version> <number>
-
-Version number of the settings plist. This should be 1.
 
 =back
 
