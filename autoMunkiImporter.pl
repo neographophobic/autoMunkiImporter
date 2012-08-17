@@ -511,7 +511,7 @@ sub findDownloadLinkOnPage {
 		logMessage("stderr, log", "ERROR: Can't download content of URL. Error was: $@", $logFile);
 		sendEmail(subject => "ERROR: $name - Can't download content of URL", message => "Can't download content of URL. Error returned was:-\n$@\nScript terminated...");
 		if ($dataPlistSourceIsDir) {
-			return undef;
+			next;
 		} else {
 			exit 1;
 		}		
