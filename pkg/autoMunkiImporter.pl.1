@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "AUTOMUNKIIMPORTER 1"
-.TH AUTOMUNKIIMPORTER 1 "2012-07-31" "0.1.0" "Tool Reference Manual"
+.TH AUTOMUNKIIMPORTER 1 "2012-08-17" "0.2.0" "Tool Reference Manual"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -135,7 +135,7 @@ autoMunkiImporter \- Automatically import apps into Munki
 .IX Header "SYNOPSIS"
 autoMunkiImporter.pl \-\-data /path/to/data[.plist] [options]
 .PP
-.Vb 10
+.Vb 11
 \& Options:
 \&        \-\-data /path/to/data[.plist]            Path to the data plist or directory containing data plists (required)
 \&        \-\-download                              Only download the file (doesn\*(Aqt import into Munki)
@@ -143,6 +143,7 @@ autoMunkiImporter.pl \-\-data /path/to/data[.plist] [options]
 \&        \-\-ignoreModDate                         Ignore the modified date and version info from the data plist
 \&        \-\-progress                              Prints progress information to STDOUT
 \&        \-\-reset                                 Resets the modified date for an app
+\&        \-\-settings /path/to/settings.plist      Optional path to a default settings plist
 \&        \-\-test                                  Tests that the script has all of the required items and rights
 \&        \-\-verbose                               Show verbose output to STDOUT
 \&        \-\-version                               Prints scripts version to STDOUT
@@ -176,6 +177,11 @@ Reports progress of the script to \s-1STDOUT\s0
 Resets the modified date of an app to the current modification date, without downloading or 
 importing the item into Munki. Use this when the latest version of an app is in your Munki repo, so 
 that this script doesn't attempt to re add it, of if you want to skip a version.
+.IP "\fB\-\-settings /path/to/settings.plist\fR" 8
+.IX Item "--settings /path/to/settings.plist"
+Optional path to a default settings plist. If not provided /Library/Application Support/autoMunkiImporter/_DefaultConfig.plist 
+is used. This plist contains the default settings for the script, some of which can be overridden by
+the data plists.
 .IP "\fB\-\-test\fR" 8
 .IX Item "--test"
 Checks that the script passes it's initial checks, and that it has permissions to write to
@@ -329,6 +335,46 @@ and dev, not prod.
 \& </dict>
 \& </plist>
 .Ve
+.SH "DEFAULT SETTINGS PLIST"
+.IX Header "DEFAULT SETTINGS PLIST"
+The default settings plist contains configuration for the script. It has a series of required keys.
+.SS "\s-1REQUIRED\s0 \s-1KEYS\s0"
+.IX Subsection "REQUIRED KEYS"
+.IP "\fBuserAgent\fR <string>" 8
+.IX Item "userAgent <string>"
+User Agent string to use. Recommendation is Safari's User Agent for your primary \s-1OS\s0.
+.IP "\fBlogFile\fR <string>" 8
+.IX Item "logFile <string>"
+Path to the log file
+.IP "\fBlogFileMaxSizeInMBs\fR <number>" 8
+.IX Item "logFileMaxSizeInMBs <number>"
+Size in MBs that log files can grow to until they are rolled.
+.IP "\fBmaxNoOfLogsToKeep\fR <number>" 8
+.IX Item "maxNoOfLogsToKeep <number>"
+Maximum number of logs to keep.
+.IP "\fBstatusPlistPath\fR <string>" 8
+.IX Item "statusPlistPath <string>"
+Path to status plist, which gives a summary of all apps being monitored.
+.IP "\fBemailReports\fR <boolean>" 8
+.IX Item "emailReports <boolean>"
+Whether email should be sent.
+.IP "\fBsmtpServer\fR <string>" 8
+.IX Item "smtpServer <string>"
+\&\s-1SMTP\s0 server to use for sending email. Needed regardless of whether emailReports is true or false.
+.IP "\fBfromAddress\fR <string>" 8
+.IX Item "fromAddress <string>"
+From email address to use for sending email. Needed regardless of whether emailReports is true or 
+false.
+.IP "\fBtoAddress\fR <string>" 8
+.IX Item "toAddress <string>"
+To email address to use for receiving email. Needed regardless of whether emailReports is true or 
+false.
+.IP "\fBsubjectPrefix\fR <string>" 8
+.IX Item "subjectPrefix <string>"
+Prefix to add to email subject lines. Needed regardless of whether emailReports is true or false.
+.IP "\fBmakecatalogs\fR <boolean>" 8
+.IX Item "makecatalogs <boolean>"
+Whether makecatalogs should be run at the end of each import
 .SH "DEPENDENCIES"
 .IX Header "DEPENDENCIES"
 This perl script requires the following perl modules to be installed:\-

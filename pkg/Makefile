@@ -3,7 +3,7 @@
 
 include /usr/local/share/luggage/luggage.make
 
-PACKAGE_VERSION=0.1.0
+PACKAGE_VERSION=0.2.0
 TITLE=AutoMunkiImporter
 REVERSE_DOMAIN=au.edu.anu.pkg
 PLIST_PATH=prototype.plist
