@@ -920,6 +920,11 @@ foreach $dataPlistPath (@dataPlists) {
 	logMessage("stdout, log", "App Name: $name", $logFile);
 	logMessage("stdout, log", "Processing Type: $type", $logFile);
 
+	# Show basic progress info
+	if ($progress) {
+		print "App Name: $name\n";
+	}
+
 	# Get optional email settings (overwriting the ones in the default settings plist)
 	eval { $emailReports = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "emailReports")); };
 	eval { $fromAddress = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "emailFrom")); };
@@ -933,12 +938,6 @@ foreach $dataPlistPath (@dataPlists) {
 		updateStatus($name, "Automatic Update Check is DISABLED. Exiting...");
 		next;
 	}
-	
-	# Show basic progress info
-	if ($progress) {
-		print "App Name: $name\n";
-	}
-	
 	
 	###############################################################################
 	# Main App - Step 1: Get the URL for the download
