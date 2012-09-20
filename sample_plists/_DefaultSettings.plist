@@ -24,5 +24,9 @@
 	<string>[Auto Munki Import]</string>
 	<key>makecatalogs</key>
 	<true/>
+	<key>gitEnabled</key>
+	<false/>
+	<key>gitPullAndPush</key>
+	<false/>
 </dict>
 </plist>

@@ -66,6 +66,7 @@ $tools{'awk'} = "/usr/bin/awk";
 $tools{'cp'} = "/bin/cp";
 $tools{'yes'} = "/usr/bin/yes";
 $tools{'plutil'} = "/usr/bin/plutil";
+$tools{'git'} = "/usr/bin/git";
 
 ###############################################################################
 # Configuration Variables - Don't change
@@ -86,6 +87,9 @@ my $defaultSettingsPlist = undef;
 
 # Script version
 my $scriptVersion = "v0.2.0";
+
+# Munki Repo Path
+my $repo_path = undef;
 
 # Command Line options 
 my $downloadOnly = 0; # Do a download only, without importing the package (0 = false)
@@ -110,6 +114,8 @@ my $smtpServer = undef;				# SMTP Server to use for email reports
 my $subjectPrefix = undef;			# Prefix for subject line of email reports
 my $statusPlistPath = undef;		# Path to the status plist
 my $makecatalogs = undef;			# Whether to run makecatalogs (0 = false, 1 = true)
+my $gitEnabled = undef;             # Whether to add and commit to git any updated packages
+my $gitPullAndPush = undef;         # Whether to pull and push to a remote git repo
 
 # Supported Download Types
 my @supportedDownloadTypes = ("pkg", "mpkg", "dmg", "zip", "tar", "tar.gz", "tgz", "tbz");
@@ -151,7 +157,7 @@ sub checkMunkiRepoIsAvailable {
 
 		exit 1;
 	} else {
-		my $repo_path = perlValue(getPlistObject($munkiImportConfigPlist, "repo_path"));
+		$repo_path = perlValue(getPlistObject($munkiImportConfigPlist, "repo_path"));
 
 		if ( -d "$repo_path" && -w "$repo_path/pkgs" && -w "$repo_path/pkgsinfo") {
 			# Munki repo is available and include pkgs and pkgsinfo directories
@@ -827,6 +833,13 @@ sub defaultSettings {
 
 	# Make Catalogs
 	$makecatalogs = perlValue(getPlistObject($defaultSettingsPlist, "makecatalogs"));
+
+	# Git
+	$gitEnabled = perlValue(getPlistObject($defaultSettingsPlist, "gitEnabled"));
+	$gitPullAndPush = perlValue(getPlistObject($defaultSettingsPlist, "gitPullAndPush"));
+	if (!$gitEnabled) {
+		delete($tools{'git'});
+	}
 }
 
 ###############################################################################
@@ -1232,6 +1245,13 @@ foreach $dataPlistPath (@dataPlists) {
 		print "Importing app into Munki...\n";
 	}
 	
+	# If Git is enabled, and we want to pull and push, update the repo before making changes
+	if ($gitEnabled and $gitPullAndPush) {
+	    chdir($repo_path);
+		logMessage("stdout, log", "Pulling latest changes from git server...", $logFile);
+		system("$tools{'git'} pull origin master > /dev/null");
+	}
+
 	# Get optional command line options for Munki Import
 	my $munkiimportOptions = "";
 	eval { $munkiimportOptions = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "munkiimportOptions")); };
@@ -1300,6 +1320,18 @@ foreach $dataPlistPath (@dataPlists) {
 	logMessage("stdout, log", "Pkginfo Updated...", $logFile);
 	logMessage("stdout, log", "$name version $packagedVersion was imported into Munki. Please test the app to ensure it functions correctly before enabling for any non Dev / Test users.", $logFile);
 	
+	# If Git is enabled, add the new pkginfo
+	if ($gitEnabled) {
+		logMessage("stdout, log", "Committing changes to git repo...", $logFile);
+		system("$tools{'git'} add $pkgInfoPlistPath");
+		system("$tools{'git'} commit -m \"$name ($packagedVersion) has been imported by the Automatic Munki Importer tool.\" --author \"autoMunkiImporter.pl <noreply\@anu.edu.au>\"");
+		# If we want to pull and push, push the changes back to the server
+		if ($gitPullAndPush) {
+			logMessage("stdout, log", "Pushing latest changes to git server...", $logFile);
+			system("$tools{'git'} push > /dev/null");
+		}
+	}
+
 	###############################################################################
 	# Main App - Step 7: Notify Package has been imported
 	###############################################################################
