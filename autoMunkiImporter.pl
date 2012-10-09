@@ -1249,7 +1249,7 @@ foreach $dataPlistPath (@dataPlists) {
 	if ($gitEnabled and $gitPullAndPush) {
 	    chdir($repo_path);
 		logMessage("stdout, log", "Pulling latest changes from git server...", $logFile);
-		system("$tools{'git'} pull origin master > /dev/null");
+		system("$tools{'git'} pull origin master > /dev/null 2>> $logFile");
 	}
 
 	# Get optional command line options for Munki Import
@@ -1323,12 +1323,12 @@ foreach $dataPlistPath (@dataPlists) {
 	# If Git is enabled, add the new pkginfo
 	if ($gitEnabled) {
 		logMessage("stdout, log", "Committing changes to git repo...", $logFile);
-		system("$tools{'git'} add $pkgInfoPlistPath");
-		system("$tools{'git'} commit -m \"$name ($packagedVersion) has been imported by the Automatic Munki Importer tool.\" --author \"autoMunkiImporter.pl <noreply\@anu.edu.au>\"");
+		system("$tools{'git'} add $pkgInfoPlistPath > /dev/null 2>> $logFile");
+		system("$tools{'git'} commit -m \"$name ($packagedVersion) has been imported by the Automatic Munki Importer tool.\" --author \"autoMunkiImporter.pl <noreply\@anu.edu.au>\" > /dev/null 2>> $logFile");
 		# If we want to pull and push, push the changes back to the server
 		if ($gitPullAndPush) {
 			logMessage("stdout, log", "Pushing latest changes to git server...", $logFile);
-			system("$tools{'git'} push > /dev/null");
+			system("$tools{'git'} push > /dev/null 2>> $logFile");
 		}
 	}
 
