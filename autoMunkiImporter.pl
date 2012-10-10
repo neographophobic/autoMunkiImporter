@@ -36,7 +36,8 @@ use strict;
 use warnings;
 use version;
 use Foundation;
-use URI;
+use URI::Escape;
+use URI::URL;
 use File::Temp;
 use File::Basename;
 use File::Copy;
@@ -1078,26 +1079,43 @@ foreach $dataPlistPath (@dataPlists) {
 	
 	# Sanity check download to ensure it's of a supported type
 	my $validExtension = 0; 
+	
+	# Get the true base name of the URL, removing any query strings etc
+	my $urlURL = url $url;
+	my $baseName = basename($urlURL->epath);
+
 	foreach my $supportedDownloadType(@supportedDownloadTypes) {
-		if ($url =~ m/($supportedDownloadType)$/) {
+		if ($baseName =~ m/($supportedDownloadType)$/) {
 			$validExtension = 1;	
 		}
 	}
 	
 	if (! $validExtension) {
-		# Download is in an unsupported format.
-		logMessage("stderr, log","ERROR: Download is in an unsupported format. Exiting...\n", $logFile);
-		updateStatus($name, "ERROR: Download is in an unsupported format. Exiting...");
-		sendEmail(subject => "ERROR: $name - Download is in an unsupported format", message => "URL implies that the download would be in an unsupported format ($url). Script terminated...");
-		if ($dataPlistSourceIsDir) {
-			next;
-		} else {
-			exit 1;
+		# URL's basename is unsupported, but it could be a script, so try the end of the
+		# query string to double check it is unsupported
+		$baseName = basename($url);
+		$validExtension = 0;
+		foreach my $supportedDownloadType(@supportedDownloadTypes) {
+			if ($baseName =~ m/($supportedDownloadType)$/) {
+				$validExtension = 1;	
+			}
 		}
-	}	
-	
+		
+		if (! $validExtension) {
+			# Download is in an unsupported format.
+			logMessage("stderr, log","ERROR: Download is in an unsupported format. Exiting...\n", $logFile);
+			updateStatus($name, "ERROR: Download is in an unsupported format. Exiting...");
+			sendEmail(subject => "ERROR: $name - Download is in an unsupported format", message => "URL implies that the download would be in an unsupported format ($url). Script terminated...");
+			if ($dataPlistSourceIsDir) {
+				next;
+			} else {
+				exit 1;
+			}
+		}	
+	}
+		
 	my $tmpDIR = File::Temp->newdir();
-	my $downloadFileName = addTrailingSlash($tmpDIR) . basename($url);
+	my $downloadFileName = addTrailingSlash($tmpDIR) . $baseName;
 	logMessage("stdout, log", "Starting download of Final URL to $downloadFileName...", $logFile);
 	
 	# Show basic progress info
