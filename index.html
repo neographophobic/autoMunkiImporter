@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+	<!-- Basic Page Needs
+	================================================== -->
+	<title>Auto Munki Importer</title>
+	<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Mobile Specific Metas
+	================================================== -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<!-- CSS
+	================================================== -->
+	<link rel="stylesheet" href="stylesheets/base.css">
+	<link rel="stylesheet" href="stylesheets/skeleton.css">
+	<link rel="stylesheet" href="stylesheets/layout.css">
+	<link rel="stylesheet" href="stylesheets/docs.css">
+
+</head>
+<body>
+	<div class="container">
+		<div class="three columns sidebar">
+			<nav>
+				<h3 id="logo">Auto Munki Importer</h3>
+				<ul>
+					<li><a href="#home">Home</a></li>
+				</ul>
+			</nav>
+			&nbsp;
+		</div>
+		<div class="twelve columns offset-by-one content">
+			<header>
+				<h1>Auto Munki Importer</h1>
+			</header>
+			<hr class="large" />
+			<div class="doc-section" id="home">
+				<h3>What Is It?</h3>
+				<p>autoMunkiImporter.pl is a perl script that will, based on the input data, determine if there is a new version of an application available. If a new version is available it will download the new file, extract it, and then import it into Munki.</p>
+				<p>It can handle static urls, dynamic urls where the url or link to the url change based off the version (it can also handle landing pages before the actual download), and sparkle rss feeds. This generic approach should allow you to monitor most applications.</p>
+				<p>It supports downloads in flat PKGs, DMG (including support for disk images with licence agreements), ZIP, TAR, TAR.GZ, TGZ, and TBZ. It will import a single item (APP or PKG) from anywhere within the download, so the content doesn't have to be in the top level folder. This is achieved byusing find to locate the item (e.g. the Adobe Flash Player.pkg from within the Adobe Flash download).<p>
+			</div>
+		</div><!-- content -->
+	</div><!-- container -->
+</body>
+</html>
