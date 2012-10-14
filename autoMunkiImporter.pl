@@ -933,8 +933,8 @@ foreach $dataPlistPath (@dataPlists) {
 
 	# Get optional email settings (overwriting the ones in the default settings plist)
 	eval { $emailReports = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "emailReports")); };
-	eval { $fromAddress = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "emailFrom")); };
-	eval { $toAddress = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "emailTo")); };
+	eval { $fromAddress = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "fromAddress")); };
+	eval { $toAddress = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "toAddress")); };
 	
 	# Check for optional disabled key
 	my $disabled = 0; # False
@@ -1549,12 +1549,7 @@ want to skip an app without removing it.
 If true, email reports will be sent on successfully importing a new app, or on a critical error 
 (besides the initial environment checks)
 
-=item B<emailTo> <string>
-
-Email address to send reports to. A default Email address should be specified in the script, but 
-if present in the data file it will override the default.
-
-=item B<emailFrom> <string>
+=item B<fromAddress> <string>
 
 Email address to send reports from. A default Email address should be specified in the script, but 
 if present in the data file it will override the default.
@@ -1570,6 +1565,11 @@ Additional command line options to pass to I<munkiimport>. See munkiimport --hel
 makepkginfo --help for available options.
 
 Also see B<MUNKI KEYS> for an additional way of providing data to Munki.
+
+=item B<toAddress> <string>
+
+Email address to send reports to. A default Email address should be specified in the script, but 
+if present in the data file it will override the default.
 
 =item B<userAgent> <string>
 
