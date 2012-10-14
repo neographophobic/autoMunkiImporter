@@ -12,8 +12,6 @@
 		<true/>
 		<key>itemToImport</key>
 		<string>Flip4Mac WMV.mpkg</string>
-		<key>makecatalogs</key>
-		<true/>
 		<key>munkiimportOptions</key>
 		<string>--subdirectory &quot;apps/flip4mac&quot;</string>
 		<key>name</key>

@@ -12,8 +12,6 @@
 		<true/>
 		<key>itemToImport</key>
 		<string>VLC.app</string>
-		<key>makecatalogs</key>
-		<true/>
 		<key>munkiimportOptions</key>
 		<string>--subdirectory &quot;apps/vlc&quot;</string>
 		<key>name</key>

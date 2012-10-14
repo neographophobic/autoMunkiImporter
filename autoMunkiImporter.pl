@@ -1365,7 +1365,6 @@ foreach $dataPlistPath (@dataPlists) {
 	# Main App - Step 8: Optionally run makecatalogs
 	###############################################################################
 	
-	eval { $makecatalogs = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "makecatalogs")); };
 	if ($makecatalogs) {
 		logMessage("stdout, log", "Rebuilding catalogs...", $logFile);
 		system("$tools{'makecatalogs'} > /dev/null");
@@ -1565,10 +1564,6 @@ if present in the data file it will override the default.
 Path to log file. A default log file should be specified in the script, but if present in the data 
 file it will override the default.
 
-=item B<makecatalogs> <boolean>
-
-If true, I<makecatalogs> is run after the app is imported into Munki.
-
 =item B<munkiimportOptions> <string>
 
 Additional command line options to pass to I<munkiimport>. See munkiimport --help and 
@@ -1615,8 +1610,6 @@ and dev, not prod.
 		<key>itemToImport</key>
 		<string>Skype.app</string>
 		<key>emailReports</key>
-		<true/>
-		<key>makecatalogs</key>
 		<true/>
 	</dict>
 	<key>catalogs</key>

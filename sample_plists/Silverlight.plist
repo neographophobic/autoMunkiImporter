@@ -12,8 +12,6 @@
 		<true/>
 		<key>itemToImport</key>
 		<string>Silverlight.pkg</string>
-		<key>makecatalogs</key>
-		<true/>
 		<key>munkiimportOptions</key>
 		<string>--subdirectory &quot;apps/microsoft&quot;</string>
 		<key>name</key>

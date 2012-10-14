@@ -12,8 +12,6 @@
 		<true/>
 		<key>itemToImport</key>
 		<string>Google Chrome.app</string>
-		<key>makecatalogs</key>
-		<true/>
 		<key>name</key>
 		<string>Chrome</string>
 		<key>munkiimportOptions</key>

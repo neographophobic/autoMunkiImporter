@@ -12,8 +12,6 @@
 		<true/>
 		<key>itemToImport</key>
 		<string>Firefox.app</string>
-		<key>makecatalogs</key>
-		<true/>
 		<key>munkiimportOptions</key>
 		<string>--subdirectory &quot;apps/firefox&quot; --destinationitemname &quot;Firefox RC.app&quot;</string>
 		<key>name</key>

@@ -12,8 +12,6 @@
 		<string>static</string>
 		<key>itemToImport</key>
 		<string></string>
-		<key>makecatalogs</key>
-		<true/>
 		<key>munkiimportOptions</key>
 		<string>--subdirectory &quot;apps/&quot;</string>
 		<key>emailReports</key>
