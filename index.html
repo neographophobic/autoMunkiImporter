@@ -20,16 +20,39 @@
 	<link rel="stylesheet" href="stylesheets/base.css">
 	<link rel="stylesheet" href="stylesheets/skeleton.css">
 	<link rel="stylesheet" href="stylesheets/layout.css">
+	<link rel="stylesheet" href="stylesheets/prettify.css">
 	<link rel="stylesheet" href="stylesheets/docs.css">
 
+	<script type="text/javascript" src="javascript/prettify/prettify.js"></script>
+
 </head>
-<body>
+<body onload="prettyPrint()">
 	<div class="container">
 		<div class="three columns sidebar">
 			<nav>
-				<h3 id="logo">Auto Munki Importer</h3>
+				<h3 id="navtitle">Auto Munki Importer</h3>
 				<ul>
-					<li><a href="#home">Home</a></li>
+					<div class="menuitem redborder clearfix">
+						<li><a href="index.html">Home</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="download.html">Download</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="install.html">Install</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="configuration.html">Configuration</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="dataplists.html">Import Data Plist(s)</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="troubleshooting.html">Troubleshooting, FAQs &amp; Support</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="acknowledgements.html">Acknowledgements</a></li>
+					</div>
 				</ul>
 			</nav>
 			&nbsp;
@@ -38,13 +61,133 @@
 			<header>
 				<h1>Auto Munki Importer</h1>
 			</header>
-			<hr class="large" />
-			<div class="doc-section" id="home">
-				<h3>What Is It?</h3>
-				<p>autoMunkiImporter.pl is a perl script that will, based on the input data, determine if there is a new version of an application available. If a new version is available it will download the new file, extract it, and then import it into Munki.</p>
-				<p>It can handle static urls, dynamic urls where the url or link to the url change based off the version (it can also handle landing pages before the actual download), and sparkle rss feeds. This generic approach should allow you to monitor most applications.</p>
-				<p>It supports downloads in flat PKGs, DMG (including support for disk images with licence agreements), ZIP, TAR, TAR.GZ, TGZ, and TBZ. It will import a single item (APP or PKG) from anywhere within the download, so the content doesn't have to be in the top level folder. This is achieved byusing find to locate the item (e.g. the Adobe Flash Player.pkg from within the Adobe Flash download).<p>
+			<hr class="large redbackground">
+			<h3>What Is It?</h3>
+			<p>Auto Munki Importer is a Perl script that will, based on the input data, determine if there is a new version of an application available. If a new version is available it will download the new file, extract it, and then import it into Munki.</p>
+			<p>It can handle <a href="dataplists.html#static">static</a> URLs, <a href="dataplists.html#dynamic">dynamic</a> URLs where the URL or link to the URL change based off the version (it can also handle landing pages before the actual download), and <a href="dataplists.html#sparkle">Sparkle</a> RSS feeds. This generic approach should allow you to monitor most applications.</p>
+			<p>It supports downloads in flat PKGs, DMG (including support for disk images with licence agreements), ZIP, TAR, TAR.GZ, TGZ, and TBZ. It will import a single item (Application or PKG) from anywhere within the download, so the content doesn't have to be in the top level folder. This is achieved by using find to locate the item (e.g. the Adobe Flash Player.pkg from within the Adobe Flash download).<p>
+
+			<hr class="large redbackground">
+
+			<h3>How to use it</h3>
+			<p>After the script and it's dependencies have been <a href="install.html">installed</a> and <a href="configuration.html">configured</a>, In terminal (or automatically via a Launch Daemon) run:-<br>
+				<code>autoMunkiImporter.pl --data /path/to/data[.plist] [options]</code>
+			</p>
+			
+			<h4>Options</h4>
+			<div class="row clearfix">
+				<div class="five columns alpha">
+					<code>--data /path/to/data[.plist]</code>
+				</div>
+				<div class="seven columns omega">
+					<p>Path to the data plist, or a directory containing data plists (required). The data plist contains the configuration the script needs to download a particular application.</p>
+					<p>See <a href="dataplists.html">Import Data Plist(s)</a> for structure of the plist.</p>
+				</div>
 			</div>
+			<div class="row clearfix">
+				<div class="five columns alpha">
+					<code>--download</code>
+				</div>
+				<div class="seven columns omega">
+					<p>Download the file to <code>/tmp</code>, and exits, without importing the item to Munki. It does not update the modified time or import to Munki.</p>
+				</div>
+			</div>
+			<div class="row clearfix">
+				<div class="five columns alpha">
+					<code>--help | -h | -?</code>
+				</div>
+				<div class="seven columns omega">
+					<p>Show the usage and help text.</p>
+				</div>
+			</div>
+			<div class="row clearfix">
+				<div class="five columns alpha">
+					<code>--ignoreModDate</code>
+				</div>
+				<div class="seven columns omega">
+					<p>Ignore the modified date and version info from the data plist. This will cause the item to be (re)imported into Munki.</p>
+				</div>
+			</div>
+			<div class="row clearfix">
+				<div class="five columns alpha">
+					<code>--progress | -p</code>
+				</div>
+				<div class="seven columns omega">
+					<p>Prints progress information to STDOUT.</p>
+				</div>
+			</div>
+			<div class="row clearfix">
+				<div class="five columns alpha">
+					<code>--reset</code>
+				</div>
+				<div class="seven columns omega">
+					<p>Resets the modified date of an application to the current modification date, without downloading or importing the item into Munki. Use this when the latest version of an application is in your Munki repo, so that this script doesn't attempt to re add it, of if you want to skip a version.</p>
+				</div>
+			</div>
+			<div class="row clearfix">
+				<div class="five columns alpha">
+					<code>--settings /path/to/settings.plist</code>
+				</div>
+				<div class="seven columns omega">
+					<p>Optional path to a global <a href="configuration.html#config">settings</a> plist. If not provided <code>/Library/&#8203;Application Support/&#8203;autoMunkiImporter/&#8203;_DefaultConfig.plist</code> is used. This plist contains the default settings for the script, some of which can be overridden by the data plists.</p>
+				</div>
+			</div>
+			<div class="row clearfix">
+				<div class="five columns alpha">
+					<code>--test</code>
+				</div>
+				<div class="seven columns omega">
+					<p>Checks that the script passes it's initial checks, and that it has permissions to write to the appropriate locations.</p>
+				</div>
+			</div>
+			<div class="row clearfix">
+				<div class="five columns alpha">
+					<code>--verbose | -v</code>
+				</div>
+				<div class="seven columns omega">
+					<p>In addition to writing to the log, show the log and progress messages on STDOUT.</p>
+				</div>
+			</div>
+			<div class="row clearfix">
+				<div class="five columns alpha">
+					<code>--version</code>
+				</div>
+				<div class="seven columns omega">
+					<p>Prints scripts version to STDOUT.</p>
+				</div>
+			</div>
+
+			<hr class="large redbackground">
+
+			<h3>How does it work?</h3>
+			<p>Regardless of the type, the script runs through a set of stages to determine what it should do. These stages are:-</p>
+			
+			<p><strong>Pre-Requirements check</strong><br>
+			Ensure that all of the required items are present, and operational.</p>
+			
+			<p><strong>Determine Actual URL of download file</strong><br>
+			Based on the <a href="dataplists.html#type">type</a>, determine the final URL for the file, handling redirects. At the end of this stage we should have a URL that points to the file we want to download.</p>
+
+			<p><strong>Determine if file has changed since last download</strong><br>
+			Using <code>curl</code>'s <code>--head</code> feature, we look for the <code>Last-Modified</code> header, and compare it to any previously saved modification date. If the dates are different we assume it's a new version, and that it should be downloaded. This means we only ever download new versions, not copies of existing applications.</p>
+
+			<p><strong>Download the new version</strong><br>
+			Check that the download is in a format that we support, and if so download it.</p>
+
+			<p><strong>Prepare download for import into Munki</strong><br>
+			Extracts or mounts the download, and then uses <code>find</code> to find the item within the download to import into Munki.</p>
+
+			<p><strong>Import into Munki</strong><br>
+			Imports the application into Munki using <code>munkiimport</code>.</p>
+
+			<p><strong>Update Pkginfo and Data Plists</strong><br>
+			Copies any of the <a href="dataplists.html#munkikeys">Munki keys</a> into the Pkginfo file, and updates the data plist with the new modification date. It also saves the history of the import to the data and status plists.</p>
+
+			<p><strong>Notify that an application has been imported</strong><br>
+			If email reports are enabled, send an email saying the script has imported the application to the configured email address.</p>
+
+			<p><strong>Rebuild Catalogs</strong><br>
+			If make catalogs is enabled, rebuild all of the catalogs.</p>
 		</div><!-- content -->
 	</div><!-- container -->
 </body>

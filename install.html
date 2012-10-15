@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+	<!-- Basic Page Needs
+	================================================== -->
+	<title>Auto Munki Importer</title>
+	<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Mobile Specific Metas
+	================================================== -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<!-- CSS
+	================================================== -->
+	<link rel="stylesheet" href="stylesheets/base.css">
+	<link rel="stylesheet" href="stylesheets/skeleton.css">
+	<link rel="stylesheet" href="stylesheets/layout.css">
+	<link rel="stylesheet" href="stylesheets/prettify.css">
+	<link rel="stylesheet" href="stylesheets/docs.css">
+
+	<script type="text/javascript" src="javascript/prettify/prettify.js"></script>
+
+</head>
+<body onload="prettyPrint()">
+	<div class="container">
+		<div class="three columns sidebar">
+			<nav>
+				<h3 id="navtitle">Auto Munki Importer</h3>
+				<ul>
+					<div class="menuitem">
+						<li><a href="index.html">Home</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="download.html">Download</a></li>
+					</div>
+					<div class="menuitem yellowborder clearfix">
+						<li><a href="install.html">Install</a>
+						<ul>
+							<li><a href="#dependencies">Dependencies</a></li>
+							<li><a href="#autoMunkiImporter">Auto Munki Importer</a></li>
+							<li><a href="#remove">Remove</a></li>
+						</ul></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="configuration.html">Configuration</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="dataplists.html">Import Data Plist(s)</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="troubleshooting.html">Troubleshooting, FAQs &amp; Support</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="acknowledgements.html">Acknowledgements</a></li>
+					</div>
+				</ul>
+			</nav>
+			&nbsp;
+		</div>
+		<div class="twelve columns offset-by-one content">
+			<header>
+				<h1>Installation</h1>
+			</header>
+			<hr class="large yellowbackground">
+			
+			<section id="dependencies">
+				<h3>Dependencies</h3>
+				<p>For Auto Munki Importer to run, a number of dependencies are required. During this stage we will insure that the dependencies have been satisfied and then complete the install.</p>
+				
+				<h4>Install Xcode Command Line Tools</h4>
+				<p>The Xcode Command Line Tools can be installed from within Xcode (dowloaded for either the App Store or the Developer Site), or as a separate download from <a href="https://developer.apple.com/downloads/index.action">Apple's Developer Site</a> (which requires a free developer account, but removes the need for a complete Xcode install - this is the method I use).</p>
+				<p>From the developer site, find the latest version of the tools that matches your operating system, download and then install them (standard Apple Installer Package).</p>
+
+				<h4>Perl Modules</h4>
+				<p>Auto Munki Importer utilises a number of third party Perl modules to enable the required functionality. These need to be installed before the script will work. The easiest way to install Perl modules is via CPAN. The installation requires the Xcode Command Line tools as they provide compilers etc.</p>
+				<p>The following steps will ensure that all of the required modules are installed</p>
+
+				<ol>
+					<h5><li>Configure CPAN</h5>
+					<p>CPAN is the <a href="http://www.cpan.org">Comprehensive Perl Archive Network</a> which maintains a substantial collection of third party Perl Modules. CPAN has a command line tool that can be used to install modules and their dependencies. We will use CPAN to install the required modules for Auto Munki Importer.</p>
+					<p>If you have previously configured CPAN you can skip this step.</p>
+					<p>In terminal run the following command:-<br>
+						<code>sudo cpan</code>
+						<p>When prompted, enter <code>yes</code> to accept the defaults (Would you like me to configure as much as possible automatically? and Would you like me to automatically choose the best CPAN mirror sites for you?)</p>
+						<p>Once the configuration is finished you should be configured you should be at a CPAN prompt:-<br>
+						<code>cpan[1]&gt; </code>
+						</p>
+					</p>
+					</li>
+
+					<h5><li>Install Perl Modules</h5>
+					<p>While still in CPAN (<code>sudo cpan</code> if you aren't) run the following commands which will install the module and all dependencies (or tell you it's already up to date if installed). If prompted accept the default answer.
+					<ol>
+						<li><code>install Date::Parse</code></li>
+						<li><code>install Mail::Mailer</code></li>
+						<li><code>install URI::Escape</code></li>
+						<li><code>install URI::URL</code></li>
+						<li><code>install WWW:Mechanize</code></li>
+						&nbsp;
+					</ol>
+					</li>
+
+					<h5><li>Verify Installation</h5>
+					<p>You can test if a module is installed by running <code>perl -MModule::Name -e 1</code> on the command line. There will be no output if it's installed, otherwise you will get an error ("Can't locate Module/Name.pm in @INC(...)") if it's not installed.</p>
+					<p>Note that there is no space between -M and the module name, e.g. <code>-MDate::Parse</code>.</p>
+					</li>
+				</ol>
+			</section>
+			<hr class="large yellowbackground">
+			
+			<section id="autoMunkiImporter">
+				<h3>Auto Munki Importer Installation</h3>
+				<p>Auto Munki Importer ships as a standard Apple Installer Package. Download it <a href="download.html">from here</a>, then install it like any normal installer package (you will need to enter an administrators username and password.)</p>
+				
+				<h4>What is installed?</h4>
+				<p><code>/usr/local/autoMunkiImporter/*</code><br>
+				The autoMunkiImporter.pl script and other required items are installed into this directory.
+				</p>
+
+				<p><code>/Library/&#8203;Application Support/&#8203;autoMunkiImporter/*</code><br>
+				This directory holds sample data files that are installed by default. It needs to be writable by the user that the script is run by.
+				</p>
+
+				<p><code>/Library/&#8203;Logs/&#8203;autoMunkiImporter/*</code><br>
+				This directory holds is the default location for log and status summary files. It needs to be writable by the user that the script is run by.
+				</p>
+
+				<p><code>/private/&#8203;etc/&#8203;paths.d/&#8203;autoMunkiImporter</code><br>
+				This file adds <code>/usr/local/autoMunkiImporter/*</code> to the users path, so that you can just run <code>autoMunkiImporter.pl</code> without needing to specify the entire path.
+				</p>
+
+				<p><code>/usr/&#8203;local/&#8203;share/&#8203;man/&#8203;man1/&#8203;autoMunkiImporter.pl.1</code><br>
+				The man page for Auto Munki Importer.
+				</p>
+				
+			</section>
+			<hr class="large yellowbackground">
+
+			<section id="remove">
+				<h3>Remove Auto Munki Importer</h3>
+				<p>Pending you haven't changed any of the default locations, the following commands will remove all items installed by the installer package, or created during normal operation of the script.</p>
+				<code><pre>
+rm -r /Library/Application\ Support/autoMunkiImporter
+rm -r /Library/Logs/autoMunkiImporter
+sudo rm -r /usr/local/autoMunkiImporter
+sudo rm /usr/local/share/man/man1/autoMunkiImporter.pl.1
+sudo rm /private/etc/paths.d/autoMunkiImporter
+sudo pkgutil --forget au.edu.anu.pkg.AutoMunkiImporter
+				</pre></code>				
+			</section>
+		</div><!-- content -->
+	</div><!-- container -->
+</body>
+</html>

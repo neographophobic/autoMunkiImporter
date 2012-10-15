@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+	<!-- Basic Page Needs
+	================================================== -->
+	<title>Auto Munki Importer</title>
+	<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Mobile Specific Metas
+	================================================== -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<!-- CSS
+	================================================== -->
+	<link rel="stylesheet" href="stylesheets/base.css">
+	<link rel="stylesheet" href="stylesheets/skeleton.css">
+	<link rel="stylesheet" href="stylesheets/layout.css">
+	<link rel="stylesheet" href="stylesheets/prettify.css">
+	<link rel="stylesheet" href="stylesheets/docs.css">
+
+	<script type="text/javascript" src="javascript/prettify/prettify.js"></script>
+
+</head>
+<body onload="prettyPrint()">
+	<div class="container">
+		<div class="three columns sidebar">
+			<nav>
+				<h3 id="navtitle">Auto Munki Importer</h3>
+				<ul>
+					<div class="menuitem">
+						<li><a href="index.html">Home</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="download.html">Download</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="install.html">Install</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="configuration.html">Configuration</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="dataplists.html">Import Data Plist(s)</a></li>
+					</div>
+					<div class="menuitem indigoborder clearfix">
+						<li><a href="troubleshooting.html">Troubleshooting, FAQs &amp; Support</a>
+						<ul>
+							<li><a href="#troubleshooting">Troubleshooting</a></li>
+							<li><a href="#faq">FAQs</a></li>
+							<li><a href="#support">Support</a></li>
+						</ul></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="acknowledgements.html">Acknowledgements</a></li>
+					</div>
+				</ul>
+			</nav>
+			&nbsp;
+		</div>
+		<div class="twelve columns offset-by-one content">
+			<header>
+				<h1>Troubleshooting, FAQs and Support</h1>
+			</header>
+			<hr class="large indigobackground">
+			<p>The Australian National University (ANU) has released this script as a service to the broader community, as is, and with no guarantees of support. Hopefully this website and the following information is of assistance however. If you still require support, try the options listed under <a href="#support">Support</a>.</p>
+			
+			<section id="troubleshooting">
+				<h3>Troubleshooting</h3>
+				<h4>Things to try</h4>
+				<p><strong>Try running <code>munkiimport</code> manually</strong><br>
+				If you can't import items with <code>munkiimport</code>, <code>autoMunkiImporter.pl</code> will fail. The most likely problems are that the repo isn't mounted and / or your user doesn't have permissions to write to the repo.</p>
+	
+				<p><strong>Try a verbose run</strong><br>
+				Try running <code>autoMunkiImporter.pl --verbose --data /path/to/individual/data.plist</code>. This will show more information that may help in tracking down the problem.</p>
+	
+				<p><strong>Look at the log file</strong><br>
+				Open the log file in your favourite text editor. There maybe some useful information in it. The default location for the logs are <code>/Library/&#8203;Logs/&#8203;autoMunkiImporter</code>. The log location can be overridden by the data plist however.</p>
+							
+				<h4>Curl</h4>
+				<p><code>curl</code> is used to access the web pages, handle redirects, and finally check if the application should be downloaded, and if so to download the application. You will occasionally get different results from curl then from Safari, so testing curl manually may be helpful.</p>
+				<p>The best strategy is to use <code>curl --head --location http://www.example.com/path/to/url.ext</code> and review it's content. Sites like Google Code block retrieving headers which is required for this script to work. In this case one of the returned headers will be <code>X-Content-Type-Options: nosniff</code>.</p>
+				<p>Also try using different (or no) User Agent (<code>curl --user-agent "my agent"</code>).</p>
+			</section>
+			<hr class="large indigobackground">
+
+			<section id="faq">
+				<h3>Frequently Asked Questions</h3>
+
+				<p><strong>I could use this to automatically deploy updates via Munki couldn't I?</strong><br>
+				Yes... <strong>BUT</strong> you shouldn't use it for that purpose. If you want to automatically deploy software you are not running a managed environment, and in that case you should let the applications run their own self updaters, or users install updates themselves.</p>
+				<p>Auto Munki Importer can get major version changes which could have a material impact on your business. Each new application update should be tested and approved before being released to your production clients.</p>
+				<p>I would only suggest automatically deploying to machines used by the systems administrator(s) for internal testing.</p>
+				
+				<p><strong>Auto Munki Importer downloaded previous version fine, but it hasn't downloaded the latest version...</strong><br>
+				As the tool is monitoring websites that we have no control over, a change in the website can stop the script from running. There is no guarantee that Auto Munki Importer will continue to work for a site it's previously worked on. You may need to update the data plist, or try a different type depending on the changes.</p>
+
+				<p><strong>Can I trust Auto Munki Importer to always download the latest version?</strong><br>
+				<strong>No!</strong> As Auto Munki Importer monitors websites that are outside of our control there is no guarantee that it will always work. You should from time to time review all of your monitored apps and ensure that you have downloaded the latest version. The status plist at <code>/Library/&#8203;Logs/&#8203;autoMunkiImporter/&#8203;autoMunkiImporterStatus.plist</code> is a good place to start as it lists the download history of every application that's being monitored.</p>
+
+				<p><strong>Can Auto Munki Importer handle "delta" updates (e.g. Adobe Creative Suite or Microsoft Office updates)?</strong><br>
+				No. It's designed for complete applications that could be deployed independently of any other requirements.</p> 
+
+				<p><strong>I want to make some changes to Auto Munki Importer. Will you accept the changes?</strong><br>
+				If you would like to see changes you make merged into the Auto Munki Importer codebase, please make a pull request in Github. The changes will be assessed and considered for inclusion. 
+				</p>
+
+				<p><strong>I wish Auto Munki Importer could do "x". Will you add it?</strong><br>
+				Please log feature requests via the <a href="https://github.com/neographophobic/autoMunkiImporter/issues">Auto Munki Importer Issue Tracker</a>, however I can offer no guarantees that they will be actioned. Auto Munki Importer is however open source, so you can view the latest version of the source code at <a href="https://github.com/neographophobic/autoMunkiImporter">https://github.com/neographophobic/autoMunkiImporter</a> and possibly make the changes yourself. 
+				</p>
+
+
+			</section>
+			<hr class="large indigobackground">
+						
+			<section id="support">
+				<h3>Support</h3>
+				<h4>Wiki</h4>
+				<p>Please consult the <a href="https://github.com/neographophobic/autoMunkiImporter/wiki">Auto Munki Importer Github Wiki</a>. There maybe additional tips or tricks that may assist you.</p>
+	
+				<h4>Issue Tracker</h4>
+				<p>If you have a problem, you can raise an issue at the <a href="https://github.com/neographophobic/autoMunkiImporter/issues">Auto Munki Importer Issue Tracker</a>.</p>
+				<p>To assist in resolving the problem, please use the following template, filling in the details between the &lt;&nbsp&gt; brackets:-<br>
+				<blockquote style="font-family: monospace;">
+				Application Name: &lt;App Name&gt;<br>
+				Version: &lt;Version&gt;<br>
+				URL of Website: &lt;Website URL&gt;<br>
+				<br>
+				Complete Data Plist: <br>
+				&lt;Data Plist&gt;<br>
+				<br>
+				Output from <code>autoMunkiImporter.pl --verbose</code> run:<br>
+				&lt;Verbose Run&gt;<br>
+				<br>			
+				Auto Munki Importer Version: <br>
+				&lt;output of <code>autoMunkiImporter.pl --version</code>&gt;
+				</blockquote>
+				</p>
+	
+				<h4>Sample Data Plists</h4>
+				<p>A number of data plists are included with the installer, however additional data plists may be shared by members of the community, and where possible will be collated at <a href="https://github.com/neographophobic/autoMunkiImporter/tree/master/sample_plists">https://github.com/neographophobic/autoMunkiImporter/tree/master/sample_plists</a>.</p>
+				<p>Data plists can be submitted via the Issue Tracker, and / or via a Github pull request.</p>
+				
+				<h4>Source Code</h4>
+				<p>Auto Munki Importer is a Perl script, as such all of the source code is easily accessible. You can view the latest version of the source code at <a href="https://github.com/neographophobic/autoMunkiImporter">https://github.com/neographophobic/autoMunkiImporter</a>. The comments in the source code may help identify the issue.</p>
+			</section>
+			
+		</div><!-- content -->
+	</div><!-- container -->
+</body>
+</html>

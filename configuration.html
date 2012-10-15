@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+	<!-- Basic Page Needs
+	================================================== -->
+	<title>Auto Munki Importer</title>
+	<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Mobile Specific Metas
+	================================================== -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<!-- CSS
+	================================================== -->
+	<link rel="stylesheet" href="stylesheets/base.css">
+	<link rel="stylesheet" href="stylesheets/skeleton.css">
+	<link rel="stylesheet" href="stylesheets/layout.css">
+	<link rel="stylesheet" href="stylesheets/prettify.css">
+	<link rel="stylesheet" href="stylesheets/docs.css">
+
+	<script type="text/javascript" src="javascript/prettify/prettify.js"></script>
+
+</head>
+<body onload="prettyPrint()">
+	<div class="container">
+		<div class="three columns sidebar">
+			<nav>
+				<h3 id="navtitle">Auto Munki Importer</h3>
+				<ul>
+					<div class="menuitem">
+						<li><a href="index.html">Home</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="download.html">Download</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="install.html">Install</a>
+					</div>
+					<div class="menuitem greenborder clearfix">
+						<li><a href="configuration.html">Configuration</a>
+						<ul>
+							<li><a href="#permissions">Permissions</a></li>
+							<li><a href="#config">Global Config</a></li>
+							<li><a href="#launchd">Launch Daemon</a></li>
+						</ul></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="dataplists.html">Import Data Plist(s)</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="troubleshooting.html">Troubleshooting, FAQs &amp; Support</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="acknowledgements.html">Acknowledgements</a></li>
+					</div>
+				</ul>
+			</nav>
+			&nbsp;
+		</div>
+		<div class="twelve columns offset-by-one content">
+			<header>
+				<h1>Configuration</h1>
+			</header>
+			<hr class="large greenbackground">
+
+			<section id="permissions">
+				<h3>Munki and File System Permissions</h3>
+				<blockquote>The script assumes that if the repo is accessed from a network share that the share has been mapped as appropriate before it's run.</blockquote>
+
+				<h4>Munki Import</h4>
+				<p>Auto Munki Importer uses <code>munkiimport</code> to import the packages.</p>
+				<p>Please ensure that <code>munkiimport --configure</code> has been run and has the correct configuration for the "Path to munki repo" and "pkginfo extension" options.</p> 
+
+				<h4>Permissions</h4>
+				<p>In addition to writing to the Munki repo, the script needs to also write to the data plists, and log files. While these files can be anyway, the default locations are:-<br>
+				<ul class="square">
+					<li><code>/Library/&#8203;Application Support/&#8203;autoMunkiImporter</code></li>
+					<li><code>/Library/&#8203;Logs/&#8203;autoMunkiImporter</code></li>
+				</ul></p>
+			</section>
+			<hr class="large greenbackground">
+			
+			<section id="config">
+				<h3>Auto Munki Importer Global Config</h3>
+				<p>The default settings plist contains configuration for the script. It has a series of required keys, some of which may be overwritten by individual data plists.</p>
+				<p>A default settings plist is installed to <code>/Library/&#8203;Application Support/&#8203;autoMunkiImporter/&#8203;_DefaultConfig.plist</code>. You can however override this using the <code>--settings /path/to/settings.plist</code> command line paramater.</p>
+
+				<p>Please take the time to review the settings and change them as appropriate for your environment. If the email settings aren't changed, the script will exit during it's initial checks, even if emailing reports is disabled.</p>
+
+				<h4>Required Keys</h4>
+				<div class="clearfix">
+					<div class="three columns alpha tableheading">
+						<p>Key</p>
+					</div>
+					<div class="two columns tableheading">
+						<p>Type</p>			
+					</div>
+					<div class="seven columns omega tableheading">
+						<p>Description</p>
+					</div>
+				</div>
+
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>emailReports</code>
+					</div>
+					<div class="two columns">
+						<code>boolean</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>Whether email reports should be sent (Default: <code>True</code>).</p>
+					</div>
+				</div>
+
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>fromAddress</code>
+					</div>
+					<div class="two columns">
+						<code>string</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>From email address to use for sending email (Default: <code>replace_me@example.com</code>). Needed regardless of whether emailReports is true or false.</p>
+					</div>
+				</div>
+
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>gitEnabled</code>
+					</div>
+					<div class="two columns">
+						<code>boolean</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>Whether to add and commit new pkginfos with git (Default: <code>False</code>).</p>
+					</div>
+				</div>
+
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>gitPushAndPull</code>
+					</div>
+					<div class="two columns">
+						<code>boolean</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>Whether to pull and push changes to and from a remote git repo (Default: <code>False</code>).</p>
+					</div>
+				</div>
+
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>logFile</code>
+					</div>
+					<div class="two columns">
+						<code>string</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>Path to the log file to use (Default: <code>/Library/&#8203;Logs/&#8203;autoMunkiImporter/&#8203;autoMunkiImporter.log</code>).</p>
+					</div>
+				</div>
+
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>logFileMaxSizeInMBs</code>
+					</div>
+					<div class="two columns">
+						<code>number</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>Size in MBs that log files can grow to until they are rolled (Default: <code>1MB</code>).</p>
+					</div>
+				</div>
+
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>makecatalogs</code>
+					</div>
+					<div class="two columns">
+						<code>boolean</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>Whether makecatalogs should be run at the end of each import (Default: <code>True</code>).</p>
+					</div>
+				</div>
+
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>maxNoOfLogsToKeep</code>
+					</div>
+					<div class="two columns">
+						<code>number</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>Maximum number of logs files to keep (Default: <code>5</code>).</p>
+					</div>
+				</div>
+
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>smtpServer</code>
+					</div>
+					<div class="two columns">
+						<code>string</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>SMTP server to use for sending email (Default: <code>replace_me.example.com</code>). Needed regardless of whether emailReports is true or false.</p>
+					</div>
+				</div>
+
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>statusPlistPath</code>
+					</div>
+					<div class="two columns">
+						<code>string</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>Path to status plist, which gives a summary of all applications being monitored (Default: <code>/Library/&#8203;Logs/&#8203;autoMunkiImporter/&#8203;autoMunkiImporterStatus.plist</code>).</p>
+					</div>
+				</div>
+
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>subjectPrefix</code>
+					</div>
+					<div class="two columns">
+						<code>string</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>Prefix to add to email subject lines (Default: <code>[Auto Munki Import]</code>). Needed regardless of whether emailReports is true or false.</p>
+					</div>
+				</div>
+
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>toAddress</code>
+					</div>
+					<div class="two columns">
+						<code>string</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>To email address to use for receiving email (Default: <code>replace_me@example.com</code>). Needed regardless of whether emailReports is true or false.</p>
+					</div>
+				</div>
+
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>userAgent</code>
+					</div>
+					<div class="two columns">
+						<code>string</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>The User Agent string to use when attempting to download applications (Default: <code>Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/536.26.14 (KHTML, like Gecko) Version/6.0.1 Safari/536.26.14</code>). I recommendation you use Safari's User Agent for your primary OS (the default is for Lion).</p>
+					</div>
+				</div>
+
+			<p>Once you have configured the settings plist, Auto Munki Importer should now have everything it needs to run. You can verify this by running <code>autoMunkiImporter.pl --test</code>. You should get "<code>All tests passed...</code>" if everything has been configured correctly.</p> 
+
+       		</section>
+			<hr class="large greenbackground">
+			
+			<section id="launchd">
+				<h3>Launch Daemon</h3>
+				<p>To fully automate importing packages into Munki, the script should be set to run as a Launch Daemon. An example plist appears below that uses the default install locations and will run at 5am each day. If you modify where the data plists, or the location of the script are you will need to make the appropriate changes.</p>
+				<pre class="prettyprint">
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;!DOCTYPE plist PUBLIC &quot;-//Apple//DTD PLIST 1.0//EN&quot; &quot;http://www.apple.com/DTDs/PropertyList-1.0.dtd&quot;&gt;
+&lt;plist version=&quot;1.0&quot;&gt;
+&lt;dict&gt;
+	&lt;key&gt;Label&lt;/key&gt;
+	&lt;string&gt;au.edu.anu.autoMunkiImporter&lt;/string&gt;
+	&lt;key&gt;ProgramArguments&lt;/key&gt;
+	&lt;array&gt;
+		&lt;string&gt;/usr/local/autoMunkiImporter/autoMunkiImporter.pl&lt;/string&gt;
+		&lt;string&gt;--data&lt;/string&gt;
+		&lt;string&gt;/Library/Application Support/autoMunkiImporter&lt;/string&gt;
+	&lt;/array&gt;
+	&lt;key&gt;StartCalendarInterval&lt;/key&gt;
+	&lt;dict&gt;
+		&lt;key&gt;Hour&lt;/key&gt;
+		&lt;integer&gt;5&lt;/integer&gt;
+		&lt;key&gt;Minute&lt;/key&gt;
+		&lt;integer&gt;0&lt;/integer&gt;
+	&lt;/dict&gt;
+	&lt;key&gt;UserName&lt;/key&gt;
+	&lt;string&gt;REPLACE_ME&lt;/string&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</pre><br>
+			<p>You should set the UserName to match a user that has munkiimport configured, and has appropriate permissions as outlined above.</p>
+			<p>Save the plist to <code>/Library/LaunchDaemons/au.edu.anu.autoMunkiImporter.plist</code>, and then run <code>sudo chown root:wheel /Library/LaunchDaemons/au.edu.anu.autoMunkiImporter.plist</code> and <code>sudo chmod 644 /Library/LaunchDaemons/au.edu.anu.autoMunkiImporter.plist</code>.</p>
+			<p>You should then load it, so that launchd is aware of it and will run it at 5am tomorrow. To load the plist use <code>sudo launchctl load /Library/LaunchDaemons/au.edu.anu.autoMunkiImporter.plist</code>.</p>
+			</section>
+
+		</div><!-- content -->
+	</div><!-- container -->
+</body>
+</html>

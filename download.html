@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+	<!-- Basic Page Needs
+	================================================== -->
+	<title>Auto Munki Importer</title>
+	<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Mobile Specific Metas
+	================================================== -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<!-- CSS
+	================================================== -->
+	<link rel="stylesheet" href="stylesheets/base.css">
+	<link rel="stylesheet" href="stylesheets/skeleton.css">
+	<link rel="stylesheet" href="stylesheets/layout.css">
+	<link rel="stylesheet" href="stylesheets/prettify.css">
+	<link rel="stylesheet" href="stylesheets/docs.css">
+
+	<script type="text/javascript" src="javascript/prettify/prettify.js"></script>
+
+</head>
+<body onload="prettyPrint()">
+	<div class="container">
+		<div class="three columns sidebar">
+			<nav>
+				<h3 id="navtitle">Auto Munki Importer</h3>
+				<ul>
+					<div class="menuitem">
+						<li><a href="index.html">Home</a></li>
+					</div>
+					<div class="menuitem orangeborder clearfix">
+						<li><a href="download.html">Download</a>
+						<ul>
+							<li><a href="#requirements">Requirements</a></li>
+							<li><a href="#version">Version History</a></li>
+							<li><a href="#licence">Licences</a></li>
+						</ul></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="install.html">Install</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="configuration.html">Configuration</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="dataplists.html">Import Data Plist(s)</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="troubleshooting.html">Troubleshooting, FAQs &amp; Support</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="acknowledgements.html">Acknowledgements</a></li>
+					</div>
+				</ul>
+			</nav>
+			&nbsp;
+		</div>
+		<div class="twelve columns offset-by-one content">
+			<header>
+				<h1>Download</h1>
+			</header>
+			<hr class="large orangebackground">
+			<div class="row clearfix">
+				<div class="four columns alpha">
+					&nbsp;
+				</div>
+				<div class="four columns">
+					<a href="https://github.com/downloads/neographophobic/autoMunkiImporter/AutoMunkiImporter-0.3.0.dmg" class="remove-bottom button">Download Auto Munki Importer v0.3</a>
+					<div class="post-button-note half-bottom">or <a href="https://github.com/neographophobic/autoMunkiImporter">View Source on Github</a></div>
+				</div>
+				<div class="four columns omega">
+					&nbsp;
+				</div>
+			</div>
+			
+			<section id="requirements">
+				<h3>Requirements</h3>
+				<p>Auto Munki Importer requires the following items (please see the <a href="install.html">Install</a> section for installing, and the <a href="configuration.html">Configuration</a> section for configuring these requirements):-</p>
+				<ul class="square">
+					<li>Mac OS X (tested on 10.7.x, but should work on most versions of OS X)</li>
+					<li>Munki Admin Tools (tested with 0.8.3.1564 to 0.8.3.1651, but should work with earlier versions)</li>
+					<li>Xcode Command Line Tools
+					<ul class="square">
+						<li>Can be installed from within Xcode (dowloaded for either the App Store or the Developer Site), or </li>
+						<li>As a separate download from <a href="https://developer.apple.com/downloads/index.action">Apple's Developer Site</a>.</li>
+					</ul></li>
+					<li>Third Party Perl Modules (installed via CPAN)
+					<ul class="square">
+						<li>Date::Parse</li>
+						<li>Mail::Mailer</li>
+						<li>URI::Escape</li>
+						<li>URI::URL</li>
+						<li>WWW:Mechanize</li>
+					</ul></li>
+				</ul>
+			</section>
+			<hr class="large orangebackground">
+			
+			<section id="version">
+				<h3>Version History</h3>
+				<ul class="square">
+					<li><strong>v0.3.0</strong> <em></em>: 
+						<ul class="square">
+							<li>Initial Public Release</li>
+							<li>Added support for Git, including checking in a new pkginfos, and also pulling and pushing to remote repos</li>
+							<li>Improved verification of download types to first try the basename of the URL, and if that fails, try the last query paramater</li>
+						</ul>
+					</li>
+					<li><strong>v0.2.0</strong> <em>(2012-07-31 - Private Release)</em>: 
+						<ul class="square">
+							<li>Vasty improve settings handling, including moving most settings to their own settings file which can be provided by the command line <code>--settings /path/to/settings.plist</code> otherwise the default <code>/Library/&#8203;Application Support/&#8203;autoMunkiImporter/&#8203;_DefaultConfig.plist</code> is used.</li>
+							<ul class="square">
+								<li>This change also fixes issues where settings would not be reset between data plists when processing a directory, while still allowing for overriding settings in the data plists where appropriate.</li>
+							</ul>
+							<li>Detect redirect loops and bail if present.</li>
+							<li>Ensure download is in a supported format before downloading it, and improve the verification.</li>
+							<li>Track the status and history of imports and import attempts within the data plist, and a global status plist at <code>/Library/&#8203;Logs/&#8203;autoMunkiImporter/&#8203;autoMunkiImporterStatus.plist</code></li>
+							<li>Track modification dates as dates, not strings</li>
+						</ul>
+					</li>
+					<li><strong>v0.1.0</strong> <em>(2012-08-17 - Private Release)</em>: Initial version</li>
+				</ul>
+			</section>
+			<hr class="large orangebackground">
+
+			<section id="licence">
+				<h3>Licences</h3>
+				<p>Auto Munki Importer uses the <a href="http://www.magnusviri.com/computers/perlplist.html">perlplist.pl library</a>, that contains copyrighted code from James Reynolds, and the University of Utah. The full licence text is available within the perlplist.pl file which is located at <code>/usr/local/autoMunkiImporter/perlplist.pl</code>.</p>
+				<p>Auto Munki Importer is licensed under the BSD 3-Clause Licence. The full licence appears below:-<p>
+				<p class="justify">
+				Copyright (c) 2012, The Australian National University<br>
+				All rights reserved.<br><br>
+				Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+				</p>
+				<ul class="circle justify">
+					<li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
+					<li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</li>
+					<li>Neither the name of the "The Australian National University" nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.</li>
+				</ul>
+				<p class="justify">
+				THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+				</p>
+			</section>
+			</div>
+		</div><!-- content -->
+	</div><!-- container -->
+</body>
+</html>

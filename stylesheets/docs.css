@@ -17,7 +17,7 @@
 	nav {
 		position: fixed;
 		width: 160px; }
-	#logo {
+	#navtitle {
 		margin-bottom: 20px;
 		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 		letter-spacing: -1px;
@@ -27,14 +27,16 @@
 		float: left;  }
 	nav ul li {
 		display: block;
-		margin-bottom: 10px; }
+		margin-bottom: 10px;
+	}
 	nav ul li a,
 	nav ul li a:visited,
 	nav ul li a:active  {
 		font-size: 14px;
 		color: #555;
 		text-decoration: none;
-		font-weight: bold; }
+		font-weight: bold; 
+	}
 	nav ul li a:hover,
 	nav ul li a:focus {
 		color: #222; }
@@ -50,73 +52,42 @@
 		height: 8px;
 		background: #ebebeb;
 		margin: 50px 0; }
-	div.doc-section {
-		margin: 30px 0; }
-
-	#whatAndWhy .row {
-		padding: 30px 0 0; }
-
-	#typography blockquote {
-		margin-top: 20px; }
-
-	.hidden-code a {
-		font-size: 12px;
-		color: #999; }
-	.hidden-code>div {
-		display: none; }
-
-
-	/* Grid */
-	#grid .column,
-	#grid .columns {
-		background: #ddd;
-		height: 25px;
-		line-height: 25px;
-		margin-bottom: 10px;
-		text-align: center;
-		text-transform: uppercase;
-		color: #555;
-		font-size: 12px;
-		font-weight: bold;
-		-moz-border-radius: 2px;
-		 -webkit-border-radius: 2px;
-		 border-radius: 2px; }
-	#grid .column:hover,
-	#grid .columns:hover {
-		background: #bbb;
-		color: #333; }
-	#grid .example-grid { overflow: hidden; }
 
 	.post-button-note,
 	.post-button-note a {
-		font-size: 11px;
+		font-size: 12px;
 		color: #999; }
 
-	#examples .four.columns a {
-		text-decoration: none;
+	nav ul ul li,
+	nav ul ul ul li {
+		margin-top: 0px
+		margin-bottom: 0px !important;
+		font-size: 13px;
 	}
-	#examples .four.columns a:hover {
-		text-decoration: underline;
+
+	nav ul ul {
+		margin-top: 0px;
+		margin-bottom: 0px;
 	}
 
 
-	.resize {
-		position: fixed;
-		bottom: 0;
-		right: 0;
-		height: 80px;
-		width: 80px;
-		background: url(images/resize.png); }
+	ul ul li, 
+	ul ol li, 
+	ol ol li, 
+	ol ul li {
+		margin-bottom: 10px;
+		font-size: 13px;
+	}
 
-
-	img {
-		max-width: 100%;
-		height: auto; }
-
-	.gist-meta { display: none !important;}
-
-	ul ul ul li { margin-bottom: 3px; }
-
+	li:first {
+		margin-top: 0px;
+	}
+	
+	li {
+		margin-top: 5px;
+		margin-bottom: 5px;
+	}
+	
 	/* Mobile */
 	@media only screen and (max-width: 767px) {
 		header h1 { font-size: 34px; line-height: 37px; }
@@ -174,7 +145,53 @@
 
 	/* Anything smaller than standard 960 on a device */
 	@media only screen and (max-width: 959px) and (max-device-width: 1000px) {
-		.resize { display: none; }
+/*		.resize { display: none; }*/
 	}
 
+/* #Misc
+================================================== */
+	code, pre {
+		font-family: monospace;
+		color: black;
+	}
 
+    .justify {
+    	text-align: justify;
+    }
+
+	li, ol {
+		margin-bottom: 20px;
+	}
+	
+	pre.prettyprint {
+		border-style: none;
+	}
+
+	.menuitem {
+		padding-left: 7px;
+		border-left-width: 7px;
+		border-left-style: solid;
+		margin-bottom: 0px;
+		min-height: 18px;
+		border-color: #FFFFFF;
+	}
+	
+	div .tableheading p {
+		margin-bottom: 5px;	
+	}
+	
+	.redbackground    {   background: #981b1e !important; }
+	.redborder        { border-color: #981b1e !important; }
+	.orangebackground {   background: #d38200 !important; }
+	.orangeborder     { border-color: #d38200 !important; }
+	.yellowbackground {   background: #dbd900 !important; }
+	.yellowborder     { border-color: #dbd900 !important; }
+	.greenbackground  {   background: #017300 !important; }
+	.greenborder      { border-color: #017300 !important; }
+	.bluebackground   {   background: #1c3880 !important; }
+	.blueborder       { border-color: #1c3880 !important; }
+	.indigobackground {   background: #4c2582 !important; }
+	.indigoborder     { border-color: #4c2582 !important; }
+	.violetbackground {   background: #651346 !important; }
+	.violetborder     { border-color: #651346 !important; }
+	

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+	<!-- Basic Page Needs
+	================================================== -->
+	<title>Auto Munki Importer</title>
+	<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Mobile Specific Metas
+	================================================== -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<!-- CSS
+	================================================== -->
+	<link rel="stylesheet" href="stylesheets/base.css">
+	<link rel="stylesheet" href="stylesheets/skeleton.css">
+	<link rel="stylesheet" href="stylesheets/layout.css">
+	<link rel="stylesheet" href="stylesheets/prettify.css">
+	<link rel="stylesheet" href="stylesheets/docs.css">
+
+	<script type="text/javascript" src="javascript/prettify/prettify.js"></script>
+
+</head>
+<body onload="prettyPrint()">
+	<div class="container">
+		<div class="three columns sidebar">
+			<nav>
+				<h3 id="navtitle">Auto Munki Importer</h3>
+				<ul>
+					<div class="menuitem">
+						<li><a href="index.html">Home</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="download.html">Download</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="install.html">Install</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="configuration.html">Configuration</a></li>
+					</div>
+					<div class="menuitem blueborder clearfix">
+						<li><a href="dataplists.html">Import Data Plist(s)</a>
+						<ul>
+							<li><a href="#format">Format</a></li>
+							<li><a href="#type">Types</a>
+							<ul>
+								<li><a href="#static">Static</a></li>
+								<li><a href="#dynamic">Dynamic</a></li>
+								<li><a href="#sparkle">Sparkle</a></li>
+							</ul></li>
+							<li><a href="#findurl">Finding the URL</a></li>
+						</ul></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="troubleshooting.html">Troubleshooting, FAQs &amp; Support</a></li>
+					</div>
+					<div class="menuitem">
+						<li><a href="acknowledgements.html">Acknowledgements</a></li>
+					</div>
+				</ul>
+			</nav>
+			&nbsp;
+		</div>
+		<div class="twelve columns offset-by-one content">
+			<header>
+				<h1>Import Data Plist(s)</h1>
+			</header>
+			<hr class="large bluebackground">
+			
+			<p>Auto Munki Importer uses data plists, to inform it about a URL to monitor, how to determine the final URL for the download, and to track the modification dates of the downloads.</p>
+
+			<section id="format">
+				<h3>Format</h3>
+				<p>The data plist needs to contain a dictionary called autoMunkiImporter, which contains the following required keys.</p>
+				<h4>Required Keys</h4>
+				<div class="clearfix">
+					<div class="three columns alpha tableheading">
+						<p>Key</p>
+					</div>
+					<div class="two columns tableheading">
+						<p>Type</p>			
+					</div>
+					<div class="seven columns omega tableheading">
+						<p>Description</p>
+					</div>
+				</div>
+	
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>URLToMonitor</code>
+					</div>
+					<div class="two columns">
+						<code>string</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>This is the URL to monitor for new versions of an application.</p>
+					</div>
+				</div>
+	
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>name</code>
+					</div>
+					<div class="two columns">
+						<code>string</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>The name used within Munki (and as an identifier in the logs or emails from this script).</p>
+					</div>
+				</div>
+	
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>type</code>
+					</div>
+					<div class="two columns">
+						<code>string</code>						
+					</div>
+					<div class="seven columns omega">
+						<p><code>static</code>, <code>dynamic</code>, or <code>sparkle</code>.</p>
+						<p>The above indicate what type of URL it is that is being monitored, so that the code knows how to handle it.</p>
+						<p>Please see <a href="#static">Static</a>, <a href="#dynamic">Dynamic</a>, and <a href="#sparkle">Sparkle</a> for information on each of these types, and any additional required keys.</p>
+					</div>
+				</div>
+	
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>itemToImport</code>
+					</div>
+					<div class="two columns">
+						<code>string</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>This is the name of the item to be imported into Munki. For example My App.app. Case insensitive <code>find</code> is used to locate the application, so it can be anywhere in the download (even within application bundles), and wildcards are accepted.</p>
+					</div>
+				</div>
+	
+				<h4>Optional Keys</h4>
+				<div class="clearfix">
+					<div class="three columns alpha tableheading">
+						<p>Key</p>
+					</div>
+					<div class="two columns tableheading">
+						<p>Type</p>			
+					</div>
+					<div class="seven columns omega tableheading">
+						<p>Description</p>
+					</div>
+				</div>
+	
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>disabled</code>
+					</div>
+					<div class="two columns">
+						<code>boolean</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>If true, disable checking of the application. Useful if you are checking a directory of data plists and want to skip an application without removing it.</p>
+					</div>
+				</div>
+	
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>emailReports</code>
+					</div>
+					<div class="two columns">
+						<code>boolean</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>If true, email reports will be sent on successfully importing a new application, or on a critical error (besides the initial environment checks).</p>
+					</div>
+				</div>
+		
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>fromAddress</code>
+					</div>
+					<div class="two columns">
+						<code>string</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>Email address to send reports from. A default email address should be specified in the settings plist, but if present in the data file it will override the default.</p>
+					</div>
+				</div>
+	
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>logFile</code>
+					</div>
+					<div class="two columns">
+						<code>string</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>Path to log file. A default log file should be specified in the settings plist, but if present in the data file it will override the default.</p>
+					</div>
+				</div>
+		
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>munkiimportOptions</code>
+					</div>
+					<div class="two columns">
+						<code>string</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>Additional command line options to pass to <code>munkiimport</code>. See <code>munkiimport --help</code> and <code>makepkginfo --help</code> for available options.</p>
+						<p>Also see <a href="#munkikeys">Munki Keys</a> for an additional way of providing data to be incorporated into the pkginfo's generated by Munki.</p>
+					</div>
+				</div>
+	
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>toAddress</code>
+					</div>
+					<div class="two columns">
+						<code>string</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>Email address to send reports to. A default email address should be specified in the settings plist, but if present in the data file it will override the default.</p>
+					</div>
+				</div>
+
+				<div class="clearfix">
+					<div class="three columns alpha">
+						<code>userAgent</code>
+					</div>
+					<div class="two columns">
+						<code>string</code>						
+					</div>
+					<div class="seven columns omega">
+						<p>Some websites return different content based on the User Agent. This key allows you to specify the user agent to use. If this key is present it will override the user agent in the settings plist.</p>
+					</div>
+				</div>
+				
+				<section id="munkikeys">
+					<h4>Munki Keys</h4>
+					<p>In addition to providing options to <code>munkiimport</code> (and in turn <code>makepkginfo</code>)  via the <code>munkiimportOptions</code> key, you can at the top level of the data plist include keys that will be copied across to the pkginfo file.</p>
+					<p>This can be useful with items like pre and post scripts, so that instead of having to maintain copies of the script, you can just copy the item into the data plist like you would to a pkginfo and the script will automatically add it. Use this for items that don't typically change between versions.</p>
+					<p>Any keys at the top level of the plist will override those in the generated pkginfo. So if you say used the munkiimportOptions key and include <code>--catalog prod</code>, but had a <code>catalog</code> array at the top of the data plist that contained 2 strings (autopkg, dev) then the final pkginfo would be set to autopkg, and dev, not prod as demonstrated with the following snippets:-<br>
+					<h5><code>munkiimportOptions</code> key only</h5>
+					<pre class="prettyprint">
+&lt;dict&gt;
+	   &lt;key&gt;autoMunkiImporter&lt;/key&gt;
+	   &lt;dict&gt;
+		   &lt;key&gt;munkiimportOptions&lt;/key&gt;
+		   &lt;string&gt;--catalog prod&lt;/string&gt;
+	   &lt;/dict&gt;
+&lt;/dict&gt;</pre>
+					Catalog would be "prod".<br><br>
+					
+					<h5><code>munkiimportOptions</code> key, and <code>catalogs</code> key</h5>
+					<pre class="prettyprint">
+&lt;dict&gt;
+	   &lt;key&gt;autoMunkiImporter&lt;/key&gt;
+	   &lt;dict&gt;
+		   &lt;key&gt;munkiimportOptions&lt;/key&gt;
+		   &lt;string&gt;--catalog prod&lt;/string&gt;
+	   &lt;/dict&gt;
+	   &lt;key&gt;catalogs&lt;/key&gt;
+	   &lt;array&gt;
+		   &lt;string&gt;dev&lt;/string&gt;
+	   &lt;/array&gt;
+&lt;/dict&gt;</pre>
+					Catalog would be "dev" as <code>catalogs</code> will override <code>munkiimportOptions</code>.<br><br>
+		
+					<h5><code>catalogs</code> key only</h5>
+					<pre class="prettyprint">
+&lt;dict&gt;
+	   &lt;key&gt;catalogs&lt;/key&gt;
+	   &lt;array&gt;
+		   &lt;string&gt;dev&lt;/string&gt;
+	   &lt;/array&gt;
+&lt;/dict&gt;</pre>
+					Catalog would be "dev".<br>
+					</p>
+				</section>
+			</section>
+			<hr class="large bluebackground">
+			
+			<section id="type">
+				<h3>Types</h3>
+				<p>Auto Munki Importer is aware of three different ways to monitor an application. They are <a href="#static">Static</a>, <a href="#dynamic">Dynamic</a>, and <a href="#sparkle">Sparkle</a>. Each type is explained below, and an example given.</p>
+
+				<section id="static">
+					<h4>Static</h4>
+					<p>Use static when the URL doesn't change between versions. This is for sites that just update the file at the same URL when a new version is released. 
+					<p>Example:<br>Google Chrome at <a href="https://dl.google.com/chrome/mac/stable/GGRM/googlechrome.dmg">https://dl.google.com/chrome/mac/stable/GGRM/googlechrome.dmg</a>.</p>
+					<h5>Example "Static" Data Plist for Google Chrome</h5>
+					<pre class="prettyprint">
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;!DOCTYPE plist PUBLIC &quot;-//Apple//DTD PLIST 1.0//EN&quot; &quot;http://www.apple.com/DTDs/PropertyList-1.0.dtd&quot;&gt;
+&lt;plist version=&quot;1.0&quot;&gt;
+&lt;dict&gt;
+	&lt;key&gt;autoMunkiImporter&lt;/key&gt;
+	&lt;dict&gt;
+		&lt;key&gt;URLToMonitor&lt;/key&gt;
+		&lt;string&gt;https://dl.google.com/chrome/mac/stable/GGRM/googlechrome.dmg&lt;/string&gt;
+		&lt;key&gt;emailReports&lt;/key&gt;
+		&lt;true/&gt;
+		&lt;key&gt;itemToImport&lt;/key&gt;
+		&lt;string&gt;Google Chrome.app&lt;/string&gt;
+		&lt;key&gt;name&lt;/key&gt;
+		&lt;string&gt;Chrome&lt;/string&gt;
+		&lt;key&gt;munkiimportOptions&lt;/key&gt;
+		&lt;string&gt;--subdirectory "apps/google"&lt;/string&gt;
+		&lt;key&gt;type&lt;/key&gt;
+		&lt;string&gt;static&lt;/string&gt;
+	&lt;/dict&gt;
+	&lt;key&gt;catalogs&lt;/key&gt;
+	&lt;array&gt;
+		&lt;string&gt;autopkg&lt;/string&gt;
+	&lt;/array&gt;
+	&lt;key&gt;display_name&lt;/key&gt;
+	&lt;string&gt;Google Chrome Web Browser&lt;/string&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;</pre>
+				</section>
+				<hr class="large bluebackground">
+				
+				<section id="dynamic">
+					<h4>Dynamic</h4>
+					<p>Use dynamic when the download link changes with each new version. This type allows you to search the page and it's source for the download link to use. Dynamic also has an additional required and optional key. See below:-
+	
+					<h5>Required Key</h5>
+					<div class="clearfix">
+						<div class="three columns alpha tableheading">
+							<p>Key</p>
+						</div>
+						<div class="two columns tableheading">
+							<p>Type</p>					
+						</div>
+						<div class="seven columns omega tableheading">
+							<p>Description</p>
+						</div>
+					</div>
+	
+					<div class="clearfix">
+						<div class="three columns alpha">
+							<code>downloadLinkRegex</code>
+						</div>
+						<div class="two columns">
+							<code>string</code>						
+						</div>
+						<div class="seven columns omega">
+							<p>This is the either the text of the download link (e.g. THIS TEXT from: &lt;a href="http://example.com/application.dmg&gt;THIS TEXT&lt;/a&gt;), or a Perl compatible regular expression that searches the entire pages source.</p>
+						</div>
+					</div>
+	
+					<h5>Optional Key</h5>
+					<div class="clearfix">
+						<div class="three columns alpha tableheading">
+							<p>Key</p>
+						</div>
+						<div class="two columns tableheading">
+							<p>Type</p>					
+						</div>
+						<div class="seven columns omega tableheading">
+							<p>Description</p>
+						</div>
+					</div>
+	
+					<div class="clearfix">
+						<div class="three columns alpha">
+							<code>secondLinkRegex</code>
+						</div>
+						<div class="two columns">
+							<code>string</code>						
+						</div>
+						<div class="seven columns omega">
+							<p>Some web pages will redirect to a second page which contains the actual download. In this case this key is used to find the download. It works the same as the downloadLinkRegex key.</p>
+						</div>
+					</div>
+					</p>
+					<p>Example:<br>Adobe Flash Player at <a href="http://get.adobe.com/flashplayer/">http://get.adobe.com/flashplayer/</a>.</p>
+					<h5>Example "Dynamic" Data Plist for Adobe Flash Player</h5>
+					<pre class="prettyprint">
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;!DOCTYPE plist PUBLIC &quot;-//Apple//DTD PLIST 1.0//EN&quot; &quot;http://www.apple.com/DTDs/PropertyList-1.0.dtd&quot;&gt;
+&lt;plist version=&quot;1.0&quot;&gt;
+&lt;dict&gt;
+	&lt;key&gt;autoMunkiImporter&lt;/key&gt;
+	&lt;dict&gt;
+		&lt;key&gt;URLToMonitor&lt;/key&gt;
+		&lt;string&gt;http://get.adobe.com/flashplayer/&lt;/string&gt;
+		&lt;key&gt;downloadLinkRegex&lt;/key&gt;
+		&lt;string&gt;Download Now&lt;/string&gt;
+		&lt;key&gt;emailReports&lt;/key&gt;
+		&lt;true/&gt;
+		&lt;key&gt;itemToImport&lt;/key&gt;
+		&lt;string&gt;Adobe Flash Player.pkg&lt;/string&gt;
+		&lt;key&gt;munkiimportOptions&lt;/key&gt;
+		&lt;string&gt;--subdirectory "apps/adobe"&lt;/string&gt;
+		&lt;key&gt;name&lt;/key&gt;
+		&lt;string&gt;AdobeFlashPlayer&lt;/string&gt;
+		&lt;key&gt;secondLinkRegex&lt;/key&gt;
+		&lt;string&gt;location.href\s*=\s*'(.+?)'&lt;/string&gt;
+		&lt;key&gt;type&lt;/key&gt;
+		&lt;string&gt;dynamic&lt;/string&gt;
+	&lt;/dict&gt;
+	&lt;key&gt;catalogs&lt;/key&gt;
+	&lt;array&gt;
+		&lt;string&gt;autopkg&lt;/string&gt;
+	&lt;/array&gt;
+	&lt;key&gt;description&lt;/key&gt;
+	&lt;string&gt;Adobe Flash Player Plugin for Web Browsers&lt;/string&gt;
+	&lt;key&gt;display_name&lt;/key&gt;
+	&lt;string&gt;Adobe Flash Player&lt;/string&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;</pre>
+				</section>
+				<hr class="large bluebackground">
+				
+				<section id="sparkle">
+					<h4>Sparkle</h4>
+					<p>Applications that use the <a href="http://sparkle.andymatuschak.org">Sparkle framework</a> have a RSS based Appcast that list updates. This option will parse that feed for the update. To find if an application uses Sparkle run: <code>find /path/to/application.app -name Sparkle.framework -print</code>. To find the URL Sparkle is using, continue reading the <a href="#findurl">Finding the URL</a> section.</p>
+					<p>Example:<br>VLC at <a href="http://www.videolan.org">http://www.videolan.org</a> with Appcast URL of <a href="http://update.videolan.org/vlc/sparkle/vlc.xml">http://update.videolan.org/vlc/sparkle/vlc.xml</a>.</p>
+					<h5>Example "Sparkle" Data Plist for VLC</h5>
+					<pre class="prettyprint">
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;!DOCTYPE plist PUBLIC &quot;-//Apple//DTD PLIST 1.0//EN&quot; &quot;http://www.apple.com/DTDs/PropertyList-1.0.dtd&quot;&gt;
+&lt;plist version=&quot;1.0&quot;&gt;
+&lt;dict&gt;
+	&lt;key&gt;autoMunkiImporter&lt;/key&gt;
+	&lt;dict&gt;
+		&lt;key&gt;URLToMonitor&lt;/key&gt;
+		&lt;string&gt;http://update.videolan.org/vlc/sparkle/vlc.xml&lt;/string&gt;
+		&lt;key&gt;downloadLinkRegex&lt;/key&gt;
+		&lt;string&gt;&lt;/string&gt;
+		&lt;key&gt;emailReports&lt;/key&gt;
+		&lt;true/&gt;
+		&lt;key&gt;itemToImport&lt;/key&gt;
+		&lt;string&gt;VLC.app&lt;/string&gt;
+		&lt;key&gt;munkiimportOptions&lt;/key&gt;
+		&lt;string&gt;--subdirectory "apps/vlc"&lt;/string&gt;
+		&lt;key&gt;name&lt;/key&gt;
+		&lt;string&gt;VLC&lt;/string&gt;
+		&lt;key&gt;secondLinkRegex&lt;/key&gt;
+		&lt;string&gt;&lt;/string&gt;
+		&lt;key&gt;type&lt;/key&gt;
+		&lt;string&gt;sparkle&lt;/string&gt;
+		&lt;key&gt;userAgent&lt;/key&gt;
+		&lt;string&gt;&lt;/string&gt;
+	&lt;/dict&gt;
+	&lt;key&gt;catalogs&lt;/key&gt;
+	&lt;array&gt;
+		&lt;string&gt;autopkg&lt;/string&gt;
+	&lt;/array&gt;
+	&lt;key&gt;description&lt;/key&gt;
+	&lt;string&gt;VLC Media Player plays a wide range of different video and audio formats.&lt;/string&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;</pre>
+				</section>				
+			</section>
+			<hr class="large bluebackground">
+			
+			<section id="findurl">
+				<h4>Finding the URL</h4>
+				<p>In Safari you can right click on a link and "Copy Link", or view the pages source to determine the URL. If you have the <code>Develop</code> menu <code>(Preferences -> Advanced -> Show Develop meun in menu bar)</code> enabled, right click on an item and <code>Inspect Element</code>. This will show you the specific HTML behind a link.</p> 
+				<p>For tricker pages, and applications using Sparkle I recommend using <a href="http://squidman.net/squidman/">SquidMan</a>.</p>
+				
+				<h4>SquidMan</h4>
+				<p><a href="http://squidman.net/squidman/">SquidMan</a> is a easy to configure and use <a href="http://www.squid-cache.org">squid</a> proxy. You can use it to log all requests, and using this information build our data plist.</p>
+
+				<p>To setup SquidMan, do the following:-<br>
+				<ol>
+					<li>Download SquidMan from the above link, mount the disk image and copy the application to <code>/Applications</code>.</li>
+					<li>Start SquidMan, and if prompted install the critical helper tool (following the prompts).</li>
+					<li>If it's the first time you have run SquidMan the preference window will be shown. If not select <code>SquidMan -> Preferences</code>.</li>
+					<li>Select the <code>Template</code> Tab and add the following:-
+					<pre class="prettyprint">
+# Don't strip query paramaters. This could mean that sensitive information appears in your logs. Use with caution!
+strip_query_terms off</pre>
+					</li>
+					<li>Click Save.</li>
+					<li>Start (or restart) SquidMan. If everything has been successfully done it should now say <code>Status: Squid is running</code></li>
+				</ol>
+				</p>
+				<p>Configure the system to use the Squid Proxy:-<br>				
+				<ol>
+					<li><code>System Preferences -> Network</code></li>
+					<li>Select your primary network interface, and select <code>Advanced</code></li>
+					<li>Select <code>Proxies</code> tab</li>
+					<li>Enable <code>Web Proxy (HTTP)</code></li>
+					<ol>
+						<li>Set the Web proxy to <code>localhost</code></li>
+						<li>Set the port to </ode>8080</code></li>
+					</ol>
+					<li>Repeat Step 4 for <code>Secure Web Proxy (HTTPS)</code></li>
+					<li>Click <code>OK</code> then <code>Apply</code></li>
+				</ol>
+				</p>
+				
+				<p>Now that the system is using the squid proxy, you can run <code>tail -f ~/Library/Logs/squid/squid-access.log</code> to see what URLs are being accessed. If the application uses Sparkle, ask it to check for updates and look for what URL was used.</p>
+			</section>
+
+		</div><!-- content -->
+	</div><!-- container -->
+</body>
+</html>
