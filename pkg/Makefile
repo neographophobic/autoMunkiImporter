@@ -9,7 +9,6 @@ REVERSE_DOMAIN=au.edu.anu.pkg
 PLIST_PATH=prototype.plist
 PAYLOAD=\
 		pack-library-application_support-autoMunkiImporter \
-		pack-library-launchdaemons \
 		pack-library-logs-autoMunkiImporter \
 		pack-private-etc-pathsd \
 		pack-usr-local-autoMunkiImporter \
@@ -27,12 +26,6 @@ l_Library_Application_Support_autoMunkiImporter: l_Library_Application_Support
 	@sudo mkdir -p ${WORK_D}/Library/Application\ Support/autoMunkiImporter
 	@sudo chown root:admin ${WORK_D}/Library/Application\ Support/autoMunkiImporter
 	@sudo chmod 0775 ${WORK_D}/Library/Application\ Support/autoMunkiImporter
-
-# LaunchD Plist
-pack-library-launchdaemons: l_Library_LaunchDaemons
-	@sudo ${CP} -R ../launchd/au.edu.anu.autoMunkiImporter.plist ${WORK_D}/Library/LaunchDaemons/
-	@sudo chmod 0644 ${WORK_D}/Library/LaunchDaemons/au.edu.anu.autoMunkiImporter.plist
-	@sudo chown -R root:wheel ${WORK_D}/Library/LaunchDaemons/au.edu.anu.autoMunkiImporter.plist
 
 # Logs DIR
 pack-library-logs-autoMunkiImporter: l_Library_Logs_autoMunkiImporter
