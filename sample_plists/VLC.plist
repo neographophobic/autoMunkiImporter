@@ -28,6 +28,6 @@
 		<string>autopkg</string>
 	</array>
 	<key>description</key>
-	<string>VLC Media Players plays a wide range of different video and audio formats, and can be used to access the streaming ANUTV Stations.</string>
+	<string>VLC Media Player plays a wide range of different video and audio formats.</string>
 </dict>
 </plist>

@@ -15,7 +15,7 @@
 	<key>emailReports</key>
 	<true/>
 	<key>smtpServer</key>
-	<string>replace_me</string>
+	<string>replace_me.example.com</string>
 	<key>fromAddress</key>
 	<string>replace_me@example.com</string>
 	<key>toAddress</key>
