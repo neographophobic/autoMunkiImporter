@@ -64,7 +64,7 @@
 			<hr class="large redbackground">
 			<h3>What Is It?</h3>
 			<p>Auto Munki Importer is a Perl script that will, based on the input data, determine if there is a new version of an application available. If a new version is available it will download the new file, extract it, and then import it into Munki.</p>
-			<p>It can handle <a href="dataplists.html#static">static</a> URLs, <a href="dataplists.html#dynamic">dynamic</a> URLs where the URL or link to the URL change based off the version (it can also handle landing pages before the actual download), and <a href="dataplists.html#sparkle">Sparkle</a> RSS feeds. This generic approach should allow you to monitor most applications.</p>
+			<p>It can handle <a href="dataplists.html#static">static</a> URLs, <a href="dataplists.html#dynamic">dynamic</a> URLs where the URL or link to the URL changes based off the version (it can also handle landing pages before the actual download), and <a href="dataplists.html#sparkle">Sparkle</a> RSS feeds. This generic approach should allow you to monitor most applications.</p>
 			<p>It supports downloads in flat PKGs, DMG (including support for disk images with licence agreements), ZIP, TAR, TAR.GZ, TGZ, and TBZ. It will import a single item (Application or PKG) from anywhere within the download, so the content doesn't have to be in the top level folder. This is achieved by using find to locate the item (e.g. the Adobe Flash Player.pkg from within the Adobe Flash download).<p>
 
 			<hr class="large redbackground">
@@ -181,7 +181,7 @@
 			Imports the application into Munki using <code>munkiimport</code>.</p>
 
 			<p><strong>Update Pkginfo and Data Plists</strong><br>
-			Copies any of the <a href="dataplists.html#munkikeys">Munki keys</a> into the Pkginfo file, and updates the data plist with the new modification date. It also saves the history of the import to the data and status plists.</p>
+			Copies any of the <a href="dataplists.html#munkikeys">Munki keys</a> into the Pkginfo file, and updates the data plist with the new modification date. A record of the import is saved within the data plist, and a copy is saved to the status (summary) plist.</p>
 
 			<p><strong>Notify that an application has been imported</strong><br>
 			If email reports are enabled, send an email saying the script has imported the application to the configured email address.</p>
