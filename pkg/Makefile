@@ -14,11 +14,12 @@ PAYLOAD=\
 		pack-usr-local-autoMunkiImporter \
 		pack-usr-local-share-man-man1 \
 		pack-resource-background \
+		pack-resource-license \
 		pack-resource-readme
 
 # Sample Data Plists
 pack-library-application_support-autoMunkiImporter: l_Library_Application_Support_autoMunkiImporter
-	@sudo ${CP} -R ../sample_plists/*.plist ${WORK_D}/Library/Application\ Support/autoMunkiImporter/
+	@sudo ${CP} -R sample_plists/*.plist ${WORK_D}/Library/Application\ Support/autoMunkiImporter/
 	@sudo chmod 0664 ${WORK_D}/Library/Application\ Support/autoMunkiImporter/*.plist
 	@sudo chown -R root:admin ${WORK_D}/Library/Application\ Support/autoMunkiImporter/*.plist
 
@@ -84,9 +85,12 @@ l_usr_local_share_man: l_usr_local_share
 	@sudo chown root:wheel ${WORK_D}/usr/local/share/man
 	@sudo chmod 0755 ${WORK_D}/usr/local/share/man
 
-# Package Background and Readme
+# Package Background, License and Readme
 pack-resource-background:
 	@sudo ${INSTALL} -m 755 background.png ${RESOURCE_D}/background
+
+pack-resource-license:
+	@sudo ${INSTALL} -m 755 license.rtf ${RESOURCE_D}/License.rtf
 
 pack-resource-readme:
 	@sudo ${INSTALL} -m 755 readme.rtf ${RESOURCE_D}/ReadMe.rtf
