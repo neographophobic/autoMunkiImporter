@@ -9,7 +9,7 @@
 # download the new file, extract it, and then import it into Munki.
 
 # It can handle static URLs, dynamic URLs where the URL or link to the URL 
-# change based off the version (it can also handle landing pages before the 
+# changes based off the version (it can also handle landing pages before the 
 # actual download), and Sparkle RSS feeds. This generic approach should allow 
 # you to monitor most applications.
 
@@ -1465,7 +1465,7 @@ B<autoMunkiImporter.pl> will, based on the input data, determine if there is a n
 application available. If a new version is available it will download the new file, extract it, and 
 then import it into Munki.
 
-It can handle B<static> URLs, B<dynamic> URLs where the URL or link to the URL change based off the 
+It can handle B<static> URLs, B<dynamic> URLs where the URL or link to the URL changes based off the 
 version (it can also handle landing pages before the actual download), and B<Sparkle> RSS feeds. 
 This generic approach should allow you to monitor most applications.
 
