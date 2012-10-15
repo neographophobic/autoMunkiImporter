@@ -1,33 +1,39 @@
 #!/usr/bin/perl
 
-######## NAME ##########################################################
+######## NAME #################################################################
 # autoMunkiImporter.pl - Automatically import apps into Munki
 
-######## DESCRIPTION ################################################### 
-# This script will based on the input data determine if there is a new
-# version of an application available. If a new version is available
-# it will download the new file, extract it, and then import it into 
-# Munki.
+######## DESCRIPTION ##########################################################
+# This script will, based on the input data, determine if there is a new 
+# version of an application available. If a new version is available it will 
+# download the new file, extract it, and then import it into Munki.
 
-# It can handle static urls, dynamic urls where the URL or link to the 
-# url change based off the version (it can also handle landing pages 
-# before the actual download), and sparkle rss feeds. This generic 
-# approach should allow you to monitor most applications.
+# It can handle static URLs, dynamic URLs where the URL or link to the URL 
+# change based off the version (it can also handle landing pages before the 
+# actual download), and Sparkle RSS feeds. This generic approach should allow 
+# you to monitor most applications.
 
 # It supports downloads in flat PKGs, DMG (including support for disk images 
 # with licence agreements), ZIP, TAR, TAR.GZ, TGZ, and TBZ. It will import a 
-# single item (APP or PKG) from anywhere within the download, so the 
-# content doesn't have to be in the top level folder. This is achieved by
-# using find to locate the item (e.g. the Adobe Flash Player.pkg from 
-# within the Adobe Flash download).
+# single item (Application or PKG) from anywhere within the download, so the 
+# content doesn't have to be in the top level folder. This is achieved by using 
+# find to locate the item (e.g. the Adobe Flash Player.pkg from within the 
+# Adobe Flash download).
 
-######### COMMENTS #####################################################
-# Detailed documentation is provided at the end of the script. The best
-# way of accessing it is to run:-
+######### COMMENTS ############################################################
+# Detailed documentation is provided at the end of the script and at the
+# associated website located at:-
+# http://neographophobic.github.com/autoMunkiImporter/index.html
+
+# The best way of accessing the documentation within this script is via:-
 
 # perldoc /path/to/autoMunkiImporter.pl
 
-######### AUTHOR #######################################################
+######### LICENCE #############################################################
+# The licence for this script is included in the documentation at the end of
+# the script. It's licensed under the BSD 3-Clause Licence. 
+
+######### AUTHOR ##############################################################
 # Adam Reed <adam.reed@anu.edu.au>
 
 # Import Perl Modules, additional non standard modules are imported via 
@@ -1388,16 +1394,14 @@ autoMunkiImporter.pl --data /path/to/data[.plist] [options]
  Options:
 	--data /path/to/data[.plist]		Path to the data plist or directory containing data plists (required)
 	--download 				Only download the file (doesn't import into Munki)
-	--help | -?				Show this help text
+	--help | -h | -?			Show this help text
 	--ignoreModDate				Ignore the modified date and version info from the data plist
-	--progress				Prints progress information to STDOUT
+	--progress | -p				Prints progress information to STDOUT
 	--reset					Resets the modified date for an app
 	--settings /path/to/settings.plist	Optional path to a default settings plist
 	--test					Tests that the script has all of the required items and rights
-	--verbose				Show verbose output to STDOUT
+	--verbose | -v				Show verbose output to STDOUT
 	--version				Prints scripts version to STDOUT
-
-	man autoMunkiImporter.pl		For more detailed information
 
 =head1 OPTIONS
 
@@ -1406,82 +1410,86 @@ autoMunkiImporter.pl --data /path/to/data[.plist] [options]
 =item B<--data> /path/to/data[.plist]
 
 Path to the data plist, or a directory containing data plists (required). The data plist contains 
-the specific configuring this script to download a particular app. 
+the configuration the script needs to download a particular application. 
 
 See B<DATA PLIST> for structure of the plist.
 
-=item B<--download | -n>
+=item B<--download>
 
-Download the file to /tmp, without importing the item to Munki. It does B<not> update the modified 
-time or import to Munki.
+Download the file to /tmp, and exits, without importing the item to Munki. It does not update the 
+modified time or import to Munki.
 
-=item B<--help | -?>
+=item B<--help | -h | -?>
 
-Show this help text
+Show this usage and help text.
 
 =item B<--ignoreModDate>
 
-Ignore the modified date and version info from the data plist and exit. This will cause the item to 
-be (re)imported into Munki.
+Ignore the modified date and version info from the data plist. This will cause the item to be 
+(re)imported into Munki.
 
-=item B<--progress>
+=item B<--progress | -p>
 
-Reports progress of the script to STDOUT
+Reports progress of the script to STDOUT.
 
 =item B<--reset>
 
-Resets the modified date of an app to the current modification date, without downloading or 
-importing the item into Munki. Use this when the latest version of an app is in your Munki repo, so 
-that this script doesn't attempt to re add it, of if you want to skip a version.
+Resets the modified date of an application to the current modification date, without downloading or 
+importing the item into Munki. Use this when the latest version of an application is in your Munki 
+repo, so that this script doesn't attempt to re add it, of if you want to skip a version.
 
 =item B<--settings /path/to/settings.plist>
 
-Optional path to a default settings plist. If not provided /Library/Application Support/autoMunkiImporter/_DefaultConfig.plist 
-is used. This plist contains the default settings for the script, some of which can be overridden by
-the data plists.
+Optional path to a global settings plist. If not provided 
+/Library/Application Support/autoMunkiImporter/_DefaultConfig.plist is used. This plist contains 
+the default settings for the script, some of which can be overridden by the data plists.
 
 =item B<--test>
 
 Checks that the script passes it's initial checks, and that it has permissions to write to
 the appropriate locations.
 
-=item B<--verbose>
+=item B<--verbose | -v>
 
-In addition to writing to the log, show log and progress messages on STDOUT
+In addition to writing to the log, show log and progress messages on STDOUT.
 
 =item B<--version>
 
-Displays the scripts version
+Prints scripts version to STDOUT.
 
 =back
 
 =head1 DESCRIPTION
 
-B<autoMunkiImporter.pl> will based on the input data determine if there is a new version of an 
+B<autoMunkiImporter.pl> will, based on the input data, determine if there is a new version of an 
 application available. If a new version is available it will download the new file, extract it, and 
 then import it into Munki.
 
-It can handle static urls, dynamic urls where the URL or link to the url change based off the 
-version (it can also handle landing pages before the actual download), and sparkle rss feeds. This 
-generic approach should allow you to monitor most applications.
+It can handle B<static> URLs, B<dynamic> URLs where the URL or link to the URL change based off the 
+version (it can also handle landing pages before the actual download), and B<Sparkle> RSS feeds. 
+This generic approach should allow you to monitor most applications.
 
-It supports downloads in flat PKGs, DMG (including support for disk images with licence agreements), 
-ZIP, TAR TAR.GZ, TGZ, and TBZ. It will import a single item (APP or PKG) from anywhere within the 
-download, so the content doesn't have to be in the top level folder. This is achieved by using find 
-to locate the item (e.g. the Adobe Flash Player.pkg from within the Adobe Flash download).
+It supports downloads in flat PKGs, DMG (including support for disk images with licence 
+agreements), ZIP, TAR, TAR.GZ, TGZ, and TBZ. It will import a single item (Application or PKG) from 
+anywhere within the download, so the content doesn't have to be in the top level folder. This is 
+achieved by using find to locate the item (e.g. the Adobe Flash Player.pkg from within the Adobe 
+Flash download).
 
 =head1 DATA PLIST
 
+Auto Munki Importer uses data plists, to inform it about a URL to monitor, how to determine the 
+final URL for the download, and to track the modification dates of the downloads.
+
 =head2 REQUIRED KEYS
 
-The data plist needs to contain a dictionary called B<autoMunkiImporter>, which contains a series 
-of strings.
+The data plist needs to contain a dictionary called B<autoMunkiImporter>, which contains the 
+following required keys.
 
 =over 8
 
 =item B<URLToMonitor> <string>
 
-This is the URL to monitor for new versions of an application
+This is the URL to monitor for new versions of an application.
 
 =item B<name> <string>
 
@@ -1500,23 +1508,22 @@ when a new version is released. E.g. Google Chrome
 
 =item B<dynamic>
 
-Use dynamic when the download link on a website changes with each new version. Dynamic also has 
-additional required and optional keys. See below:-
+Use dynamic when the download link changes with each new version. This type allows you to search 
+the page and it's source for the download link to use. Dynamic also has an additional required and 
+optional key. See below:-
 
 =over 8
 
 =item B<downloadLinkRegex> - Required
 
 This is the either the text of the download link 
-(e.g. THIS TEXT from: <a href="http://example.com/app.dmg> THIS TEXT </a>), or a perl compatible 
-regular expression for the same text.
+(e.g. THIS TEXT from: E<lt>a href="http://example.com/app.dmgE<gt>THIS TEXTE<lt>/aE<gt>), or a Perl 
+compatible regular expression that searches the entire pages source.
 
 =item B<secondLinkRegex> - Optional
 
 Some web pages will redirect to a second page which contains the actual download. In this case this 
-key is used to find the download. It works the same as the downloadLinkRegex key, but if the link 
-isn't found it then just searches the entire page (for example they use Javascript to cause the 
-download to start automatically).
+key is used to find the download. It works the same as the downloadLinkRegex key.
 
 =back
 
@@ -1524,14 +1531,16 @@ download to start automatically).
 
 Apps that use the Sparkle framework have a RSS based Appcast that list updates. This option will 
 parse that feed for the update. To find if an app uses Sparkle run: 
-C<find /path/to/app -name Sparkle.framework -print>
+C<find /path/to/application.app -name Sparkle.framework -print>. To find the URL Sparkle is using,
+see the B<FINDING THE URL> section.
 
 =back
 
 =item B<itemToImport> <string>
 
-This is the name of the item to be imported into Munki. For example My App.app. Find is used to 
-locate the app, so it can be anywhere in the download (even within app bundles).
+This is the name of the item to be imported into Munki. For example My App.app. Case insensitive 
+B<find> is used to locate the application, so it can be anywhere in the download (even within 
+application bundles), and wildcards are accepted.
 
 =back
 
@@ -1541,181 +1550,351 @@ locate the app, so it can be anywhere in the download (even within app bundles).
 
 =item B<disabled> <boolean>
 
-If true, will disable checking of the app. Useful if you are checking a directory of data plists and
-want to skip an app without removing it.
+If true, disable checking of the application. Useful if you are checking a directory of data plists 
+and want to skip an application without removing it.
 
 =item B<emailReports> <boolean>
 
-If true, email reports will be sent on successfully importing a new app, or on a critical error 
-(besides the initial environment checks)
+If true, email reports will be sent on successfully importing a new application, or on a critical 
+error (besides the initial environment checks).
 
 =item B<fromAddress> <string>
 
-Email address to send reports from. A default Email address should be specified in the script, but 
-if present in the data file it will override the default.
+Email address to send reports from. A default email address should be specified in the settings 
+plist, but if present in the data file it will override the default.
 
 =item B<logFile> <string>
 
-Path to log file. A default log file should be specified in the script, but if present in the data 
-file it will override the default.
+Path to log file. A default log file should be specified in the settings plist, but if present in 
+the data file it will override the default.
 
 =item B<munkiimportOptions> <string>
 
-Additional command line options to pass to I<munkiimport>. See munkiimport --help and 
+Additional command line options to pass to munkiimport. See munkiimport --help and 
 makepkginfo --help for available options.
 
-Also see B<MUNKI KEYS> for an additional way of providing data to Munki.
+Also see B<MUNKI KEYS> for an additional way of providing data to be incorporated into the 
+pkginfo's generated by Munki.
 
 =item B<toAddress> <string>
 
-Email address to send reports to. A default Email address should be specified in the script, but 
-if present in the data file it will override the default.
+Email address to send reports to. A default email address should be specified in the settings 
+plist, but if present in the data file it will override the default.
 
 =item B<userAgent> <string>
 
-Some websites return different content based on the User Agent. If this key is present it will 
-override the user agent in the script.
+Some websites return different content based on the User Agent. This key allows you to specify the 
+user agent to use. If this key is present it will override the user agent in the settings plist.
 
 =back
 
 =head2 MUNKI KEYS
 
-In addition to providing options to munkiimport via the munkiimportOptions key, you can at the top 
-level of the data plist include keys that will be copied
-across to the pkginfo file. 
+In addition to providing options to munkiimport (and in turn makepkginfo) via the 
+munkiimportOptions key, you can at the top level of the data plist include keys that will be copied 
+across to the pkginfo file.
 
 This can be useful with items like pre and post scripts, so that instead of having to maintain 
-copies of the script, you can just copy the item into the data plist 
-like you would to a pkginfo and the script will automatically add it. 
+copies of the script, you can just copy the item into the data plist like you would to a pkginfo 
+and the script will automatically add it. Use this for items that don't typically change between 
+versions.
 
 Any keys at the top level of the plist will override those in the generated pkginfo. So if you say 
-used the munkiimportOptions key and set --catalog prod, but had a catalog array at the top of the 
-data plist that contained 2 strings (autopkg, dev) then the final pkginfo would be set to autopkg, 
-and dev, not prod.
+used the munkiimportOptions key and include --catalog prod, but had a catalog array at the top of 
+the data plist that contained 2 strings (autopkg, dev) then the final pkginfo would be set to 
+autopkg, and dev, not prod.
 
-=head2 EXAMPLE
+=head2 EXAMPLES
 
- <?xml version="1.0" encoding="UTF-8"?>
- <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
- <plist version="1.0">
- <dict>
-	<key>autoMunkiImporter</key>
-	<dict>
-		<key>URLToMonitor</key>
-		<string>http://www.skype.com/go/getskype-macosx.dmg</string>
-		<key>name</key>
-		<string>Skype</string>
-		<key>type</key>
-		<string>direct</string>
-		<key>itemToImport</key>
-		<string>Skype.app</string>
-		<key>emailReports</key>
-		<true/>
-	</dict>
-	<key>catalogs</key>
-	<array>
-		<string>dev</string>
-	</array>
- </dict>
- </plist>
+Example "Static" Data Plist for Google Chrome
+
+  <?xml version="1.0" encoding="UTF-8"?>
+  <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+  <plist version="1.0">
+  <dict>
+	  <key>autoMunkiImporter</key>
+	  <dict>
+		  <key>URLToMonitor</key>
+		  <string>https://dl.google.com/chrome/mac/stable/GGRM/googlechrome.dmg</string>
+		  <key>emailReports</key>
+		  <true/>
+		  <key>itemToImport</key>
+		  <string>Google Chrome.app</string>
+		  <key>name</key>
+		  <string>Chrome</string>
+		  <key>munkiimportOptions</key>
+		  <string>--subdirectory "apps/google"</string>
+		  <key>type</key>
+		  <string>static</string>
+	  </dict>
+	  <key>catalogs</key>
+	  <array>
+		  <string>autopkg</string>
+	  </array>
+	  <key>display_name</key>
+	  <string>Google Chrome Web Browser</string>
+  </dict>
+  </plist>
+
+Example "Dynamic" Data Plist for Adobe Flash Player
+
+  <?xml version="1.0" encoding="UTF-8"?>
+  <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+  <plist version="1.0">
+  <dict>
+	  <key>autoMunkiImporter</key>
+	  <dict>
+		  <key>URLToMonitor</key>
+		  <string>http://get.adobe.com/flashplayer/</string>
+		  <key>downloadLinkRegex</key>
+		  <string>Download Now</string>
+		  <key>emailReports</key>
+		  <true/>
+		  <key>itemToImport</key>
+		  <string>Adobe Flash Player.pkg</string>
+		  <key>munkiimportOptions</key>
+		  <string>--subdirectory "apps/adobe"</string>
+		  <key>name</key>
+		  <string>AdobeFlashPlayer</string>
+		  <key>secondLinkRegex</key>
+		  <string>location.href\s*=\s*'(.+?)'</string>
+		  <key>type</key>
+		  <string>dynamic</string>
+	  </dict>
+	  <key>catalogs</key>
+	  <array>
+		  <string>autopkg</string>
+	  </array>
+	  <key>description</key>
+	  <string>Adobe Flash Player Plugin for Web Browsers</string>
+	  <key>display_name</key>
+	  <string>Adobe Flash Player</string>
+  </dict>
+  </plist>
+
+Example "Sparkle" Data Plist for VLC
+
+  <?xml version="1.0" encoding="UTF-8"?>
+  <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+  <plist version="1.0">
+  <dict>
+	  <key>autoMunkiImporter</key>
+	  <dict>
+		  <key>URLToMonitor</key>
+		  <string>http://update.videolan.org/vlc/sparkle/vlc.xml</string>
+		  <key>downloadLinkRegex</key>
+		  <string></string>
+		  <key>emailReports</key>
+		  <true/>
+		  <key>itemToImport</key>
+		  <string>VLC.app</string>
+		  <key>munkiimportOptions</key>
+		  <string>--subdirectory "apps/vlc"</string>
+		  <key>name</key>
+		  <string>VLC</string>
+		  <key>secondLinkRegex</key>
+		  <string></string>
+		  <key>type</key>
+		  <string>sparkle</string>
+		  <key>userAgent</key>
+		  <string></string>
+	  </dict>
+	  <key>catalogs</key>
+	  <array>
+		  <string>autopkg</string>
+	  </array>
+	  <key>description</key>
+	  <string>VLC Media Player plays a wide range of different video and audio formats.</string>
+  </dict>
+  </plist>
 
 =head1 DEFAULT SETTINGS PLIST
 
-The default settings plist contains configuration for the script. It has a series of required keys.
+The default settings plist contains configuration for the script. It has a series of required keys, 
+some of which may be overwritten by individual data plists.
+
+A default settings plist is installed to 
+/Library/Application Support/autoMunkiImporter/_DefaultConfig.plist. You can however override this 
+using the --settings /path/to/settings.plist command line paramater.
+
+Please take the time to review the settings and change them as appropriate for your environment. 
+If the email settings aren't changed, the script will exit during it's initial checks, even if 
+emailing reports is disabled.
 
 =head2 REQUIRED KEYS
 
 =over 8
 
-=item B<userAgent> <string>
-
-User Agent string to use. Recommendation is Safari's User Agent for your primary OS.
-
-=item B<logFile> <string>
-
-Path to the log file
-
-=item B<logFileMaxSizeInMBs> <number>
-
-Size in MBs that log files can grow to until they are rolled.
-
-=item B<maxNoOfLogsToKeep> <number>
-
-Maximum number of logs to keep.
-
-=item B<statusPlistPath> <string>
-
-Path to status plist, which gives a summary of all apps being monitored.
-
 =item B<emailReports> <boolean>
 
-Whether email should be sent.
-
-=item B<smtpServer> <string>
-
-SMTP server to use for sending email. Needed regardless of whether emailReports is true or false.
+Whether email reports should be sent (Default: True).
 
 =item B<fromAddress> <string>
 
-From email address to use for sending email. Needed regardless of whether emailReports is true or 
-false.
+From email address to use for sending email (Default: replace_me@example.com). Needed regardless of 
+whether emailReports is true or false.
 
-=item B<toAddress> <string>
+=item B<gitEnabled> <boolean>
 
-To email address to use for receiving email. Needed regardless of whether emailReports is true or 
-false.
+Whether to add and commit new pkginfos with git (Default: False).
 
-=item B<subjectPrefix> <string>
+=item B<gitPushAndPull> <boolean>
 
-Prefix to add to email subject lines. Needed regardless of whether emailReports is true or false.
+Whether to pull and push changes to and from a remote git repo (Default: False).
+
+=item B<logFile> <string>
+
+Path to the log file to use (Default: /Library/Logs/autoMunkiImporter/autoMunkiImporter.log).
+
+=item B<logFileMaxSizeInMBs> <number>
+
+Size in MBs that log files can grow to until they are rolled (Default: 1MB).
 
 =item B<makecatalogs> <boolean>
 
-Whether makecatalogs should be run at the end of each import
+Whether makecatalogs should be run at the end of each import (Default: True).
+
+=item B<maxNoOfLogsToKeep> <number>
+
+Maximum number of logs files to keep (Default: 5).
+
+=item B<smtpServer> <string>
+
+SMTP server to use for sending email (Default: replace_me.example.com). Needed regardless of 
+whether emailReports is true or false.
+
+=item B<statusPlistPath> <string>
+
+Path to status plist, which gives a summary of all applications being monitored 
+(Default: /Library/Logs/autoMunkiImporter/autoMunkiImporterStatus.plist).
+
+=item B<subjectPrefix> <string>
+
+Prefix to add to email subject lines (Default: [Auto Munki Import]). Needed regardless of whether 
+emailReports is true or false.
+
+=item B<toAddress> <string>
+
+To email address to use for receiving email (Default: replace_me@example.com). Needed regardless of 
+whether emailReports is true or false.
+=item B<userAgent> <string>
+
+The User Agent string to use when attempting to download applications (Default: Mozilla/5.0 
+(Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/536.26.14 (KHTML, like Gecko) Version/6.0.1 
+Safari/536.26.14). I recommendation you use Safari's User Agent for your primary OS (the default is 
+for Lion).
+
+Once you have configured the settings plist, Auto Munki Importer should now have everything it 
+needs to run. You can verify this by running autoMunkiImporter.pl --test. You should get 
+"All tests passed..." if everything has been configured correctly.
 
 =back
 
 =head1 DEPENDENCIES
 
-This perl script requires the following perl modules to be installed:-
+This script requires the following Perl modules to be installed:-
  * Date::Parse
  * Mail::Mailer
  * URI::Escape
  * URI::URL
  * WWW:Mechanize
  
-You can test if a module is installed by running perl -MModule::Name -e 1 on the command line. You 
-will get an error if it's not installed. Not there is no space between -M and the module name, 
-e.g. -MDate::Parse.
+You can test if a module is installed by running perl -MModule::Name -e 1 on the command line. 
+There will be no output if it's installed, otherwise you will get an error 
+("Can't locate Module/Name.pm in @INC(...)") if it's not installed.
+
+Note that there is no space between -M and the module name, e.g. -MDate::Parse.
  
-It also requires the perlplist.pl script to be in the same directory as this script. Please see that 
-script for it's copyright statement.
+This script uses the perlplist.pl library, that contains copyrighted code from James Reynolds, and 
+the University of Utah. The full licence text is available within the perlplist.pl file which is 
+located at /usr/local/autoMunkiImporter/perlplist.pl.
 
 =head1 FINDING THE URL
 
-In Safari you can either right click on a link and "Copy Link", or view the pages source to determine 
-the URL.
+In Safari you can right click on a link and "Copy Link", or view the pages source to determine the 
+URL. If you have the Develop menu (Preferences -> Advanced -> Show Develop meun in menu bar) 
+enabled, right click on an item and Inspect Element. This will show you the specific HTML behind a 
+link.
 
 For tricker pages, and apps using Sparkle to update I recommend using SquidMan 
 http://squidman.net/squidman/.
 
 =head2 SQUIDMAN
 
-SQUIDMAN is a easy to use SQUID proxy. We can use it to log all requests, and using this information 
-build our data plist.
+SQUIDMAN is a easy to use squid proxy. You can use it to log all requests, and using this 
+information build our data plist.
 
-Once you have it installed, in the Template under preferences add "strip_query_terms off". This will 
-cause the entire URL to be shown. Start (or restart) SquidMan and then set the proxy server for your 
-machine to localhost:8080 (or the appropriate values). Then 
+Once you have it installed, select the Template tab under Preferences add "strip_query_terms off". 
+This will cause the entire URL to be shown. Start (or restart) SquidMan and then set the proxy 
+server for your machine to localhost:8080 (or the appropriate values). Then 
 tail -f ~/Library/Logs/squid/squid-access.log and you will see what URLs are accessed.
 
 =head1 TROUBLESHOOTING
 
-The best strategy is to use curl --head --location http://www.example.com/path/to/url.ext and review
-it's content. Sites like Google Code block retrieving headers which is required for this script to 
-work. In this case one of the returned headers will be X-Content-Type-Options: nosniff.
+The Australian National University (ANU) has released this script as a service to the broader 
+community, as is, and with no guarantees of support.
 
-Also try using different (or no) User Agents (curl --user-agent "my agent").
+B<Try running munkiimport manually>
+
+If you can't import items with munkiimport, autoMunkiImporter.pl will fail. The most likely 
+problems are that the repo isn't mounted and / or your user doesn't have permissions to write to 
+the repo.
+
+B<Try a verbose run>
+
+Try running autoMunkiImporter.pl --verbose --data /path/to/individual/data.plist. This will show 
+more information that may help in tracking down the problem.
+
+B<Look at the log file>
+
+Open the log file in your favourite text editor. There maybe some useful information in it. The 
+default location for the logs are /Library/​Logs/​autoMunkiImporter. The log location can be 
+overridden by the data plist however.
+
+B<Curl>
+
+curl is used to access the web pages, handle redirects, and finally check if the application should 
+be downloaded, and if so to download the application. You will occasionally get different results 
+from curl then from Safari, so testing curl manually may be helpful.
+
+The best strategy is to use curl --head --location http://www.example.com/path/to/url.ext and 
+review it's content. Sites like Google Code block retrieving headers which is required for this 
+script to work. In this case one of the returned headers will be X-Content-Type-Options: nosniff.
+
+Also try using different (or no) User Agent (curl --user-agent "my agent").
+
+=head1 LICENCE
+
+Copyright (c) 2012, The Australian National University
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted 
+provided that the following conditions are met:
+
+=over 4
+
+=item * Redistributions of source code must retain the above copyright notice, this list of 
+conditions and the following disclaimer.
+
+=item * Redistributions in binary form must reproduce the above copyright notice, this list of 
+conditions and the following disclaimer in the documentation and/or other materials provided with 
+the distribution.
+
+=item * Neither the name of the "The Australian National University" nor the names of its 
+contributors may be used to endorse or promote products derived from this software without specific 
+prior written permission.
+
+=back
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR 
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
+FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR 
+CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER 
+IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT 
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =head1 AUTHOR
 
