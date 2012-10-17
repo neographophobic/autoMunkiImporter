@@ -75,6 +75,8 @@
 			
 			<p>Auto Munki Importer uses data plists, to inform it about a URL to monitor, how to determine the final URL for the download, and to track the modification dates of the downloads.</p>
 
+			<blockquote>Data plists starting with an underscore (<code>_*.plist</code>) will be ignored by Auto Munki Importer, regardless of whether they have the disabled key enabled or disabled.</blockquote>
+
 			<section id="format">
 				<h3>Format</h3>
 				<p>The data plist needs to contain a dictionary called autoMunkiImporter, which contains the following required keys.</p>

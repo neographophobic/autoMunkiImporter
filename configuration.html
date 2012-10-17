@@ -46,6 +46,7 @@
 						<ul>
 							<li><a href="#permissions">Permissions</a></li>
 							<li><a href="#config">Global Config</a></li>
+							<li><a href="#dataplists">Sample Data Plists</a></li>
 							<li><a href="#launchd">Launch Daemon</a></li>
 						</ul></li>
 					</div>
@@ -266,6 +267,27 @@
        		</section>
 			<hr class="large greenbackground">
 			
+			<section id="dataplists">
+				<h3>Sample Data Plists</h3>
+				<p>The installer package contains the following sample data plists that you can use as a starting point for automating your packaging. They are installed into <code>/Library/&#8203;Application Support/&#8203;autoMunkiImporter</code>.</p>
+				<ul class="square">
+					<li>Adobe Flash Player</li>
+					<li>Adobe Reader</li>
+					<li>Firefox (Extended Support Release)</li>
+					<li>Firefox (Public Release)</li>
+					<li>Flip4Mac WMV Quicktime Components</li>
+					<li>Google Chrome</li>
+					<li>Silverlight</li>
+					<li>Skype</li>
+					<li>VLC</li>
+				</ul>
+				<p>In addition an empty <code>_template.plist</code> is included as a starting point for your own applications. It has all of the required and optional keys. Unused keys can be left blank.</p>
+				<p>If you plan on using this directory to host your data plists, you should review each of the samples and ensure they match your pkginfo names and locations of existing items and that they have the appropriate settings.</p>
+
+       		</section>
+			<hr class="large greenbackground">
+
+
 			<section id="launchd">
 				<h3>Launch Daemon</h3>
 				<p>To fully automate importing packages into Munki, the script should be set to run as a Launch Daemon. An example plist appears below that uses the default install locations and will run at 5am each day. If you modify where the data plists, or the location of the script are you will need to make the appropriate changes.</p>
