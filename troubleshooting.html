@@ -83,7 +83,7 @@
 							
 				<h4>Curl</h4>
 				<p><code>curl</code> is used to access the web pages, handle redirects, and finally check if the application should be downloaded, and if so to download the application. You will occasionally get different results from curl then from Safari, so testing curl manually may be helpful.</p>
-				<p>The best strategy is to use <code>curl --head --location http://www.example.com/path/to/url.ext</code> and review it's content. Sites like Google Code block retrieving headers which is required for this script to work. In this case one of the returned headers will be <code>X-Content-Type-Options: nosniff</code>.</p>
+				<p>The best strategy is to use <code>curl --head --location http://www.example.com/path/to/url.ext</code> and review its content. Sites like Google Code block retrieving headers which is required for this script to work. In this case one of the returned headers will be <code>X-Content-Type-Options: nosniff</code>.</p>
 				<p>Also try using different (or no) User Agent (<code>curl --user-agent "my agent"</code>).</p>
 			</section>
 			<hr class="large indigobackground">
