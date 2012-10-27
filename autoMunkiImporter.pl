@@ -194,13 +194,12 @@ sub checkPermissions {
 	my $logFileDir = dirname($logFile);
 	if (! -w "$logFileDir") {
 		logMessage("stderr", "ERROR: Can't write to log file: $logFile", undef);		
-		exit 1;
 	}
 
 	# Check Data dir is writable
 	if (! -w "$dataPlistPath") {
 		logMessage("stderr, log", "ERROR: Can't write to data plist: $dataPlistPath.", $logFile);		
-		exit 1;
+		next;
 	}
 }
 
@@ -384,7 +383,7 @@ sub checkDefaultSettingsPlist {
 	
 	my @expectedKeys = ("userAgent", "logFile", "logFileMaxSizeInMBs", "maxNoOfLogsToKeep", 
 						"statusPlistPath", "emailReports", "smtpServer", "fromAddress", 
-						"toAddress", "subjectPrefix", "makecatalogs");
+						"toAddress", "subjectPrefix", "makecatalogs", "dataPlistPath");
 
 	foreach my $key (@expectedKeys) {
 		my $dummyVar = "";
@@ -877,14 +876,6 @@ if ($showScriptVersion) {
 	exit 0;
 }
 
-# Check $dataPlistPath was set, and that a file exists at the location 
-if (! defined($dataPlistPath) || ! -e $dataPlistPath) {
-	# No argument, or does not exist, bail showing usage
-	logMessage("stderr", "ERROR: The data plist (or directory of plists) needs to be provided via a command line argument of --data /path/to/data.plist", "/dev/null");
-	pod2usage(1);
-	exit 1;
-}
-
 # Get default settings
 $defaultSettingsPlist = readDefaultSettingsPlist($defaultSettingsPlistPath);
 defaultSettings($defaultSettingsPlist);
@@ -893,25 +884,40 @@ defaultSettings($defaultSettingsPlist);
 checkMunkiRepoIsAvailable() or die;
 checkTools() or die;
 
-# Check paths are writable
-checkPermissions();
 if ($testScript) {
 	print "All tests passed...\n";
 	exit 0;
 }
 
-# Setup Status Plist
-$statusPlist = readStatusPlist($statusPlistPath);
+if (! defined($dataPlistPath) ) {
+	# Use the Default Data Plist(s) Path as the user didn't provide one via the command line
+	$dataPlistPath = perlValue(getPlistObject($defaultSettingsPlist, "dataPlistPath"));
+	$dataPlistPath = expandFilePath($dataPlistPath);
+}
+
+if (! -e $dataPlistPath) {
+	# Does not exist, bail showing usage
+	logMessage("stderr", "ERROR: The data plist or directory of plists does not exist at $dataPlistPath", "/dev/null");
+	exit 1;
+}
 
 if (-d $dataPlistPath) {
 	# Path to a directory of plists
 	getDataPlists($dataPlistPath);
-	$dataPlistSourceIsDir = 1;
+	if (scalar(@dataPlists) == 0) {
+		logMessage("stderr", "ERROR: The data plist directory $dataPlistPath does not contain any data plists", "/dev/null");
+		exit 1;	
+	} else {
+		$dataPlistSourceIsDir = 1;
+	}
 } else {
 	# Path to a specific plist, not a directory
 	push(@dataPlists, $dataPlistPath);
 	$dataPlistSourceIsDir = 0;
 }
+
+# Setup Status Plist
+$statusPlist = readStatusPlist($statusPlistPath);
 
 # Loop through each of the data plists that have been found and process them
 foreach $dataPlistPath (@dataPlists) {
@@ -928,6 +934,10 @@ foreach $dataPlistPath (@dataPlists) {
 	eval { $logFile = perlValue(getPlistObject($dataPlist, "autoMunkiImporter", "logFile")); };	
 	# Prepare the log for use
 	$logFile = expandFilePath($logFile);
+
+	# Check paths are writable
+	checkPermissions();
+
 	prepareLog($logFile);
 	logMessage("stdout, log", "App Name: $name", $logFile);
 	logMessage("stdout, log", "Processing Type: $type", $logFile);
@@ -1389,10 +1399,10 @@ autoMunkiImporter - Automatically import apps into Munki
 
 =head1 SYNOPSIS
 
-autoMunkiImporter.pl --data /path/to/data[.plist] [options]
+autoMunkiImporter.pl [options]
 
  Options:
-	--data /path/to/data[.plist]		Path to the data plist or directory containing data plists (required)
+	--data /path/to/data[.plist]		Path to the data plist or directory containing data plists
 	--download 				Only download the file (doesn't import into Munki)
 	--help | -h | -?			Show this help text
 	--ignoreModDate				Ignore the modified date and version info from the data plist
@@ -1409,7 +1419,7 @@ autoMunkiImporter.pl --data /path/to/data[.plist] [options]
 
 =item B<--data> /path/to/data[.plist]
 
-Path to the data plist, or a directory containing data plists (required). The data plist contains 
+Path to the data plist, or a directory containing data plists. The data plist contains 
 the configuration the script needs to download a particular application. 
 
 See B<DATA PLIST> for structure of the plist.
