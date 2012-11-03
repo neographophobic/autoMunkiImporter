@@ -880,11 +880,11 @@ sub getDataPlists {
 	my @dirContents = <$path/*>;
 	my $item;
 	foreach $item (@dirContents) {
-		if (-f $item && $item =~ /\.plist$/ && $item !~ /_.+\.plist$/ ) {
+		if (-f $item && $item =~ /\.plist$/ && basename($item) !~ /^_/ ) {
 			# Plist, so add it to the array
 			push(@dataPlists, $item);
 		}
-		if (-d $item) {
+		if (-d $item && basename($item) !~ /^_/) {
 			# Directory, so check it's contents
 			 getDataPlists($item);
 		 }
