@@ -50,6 +50,8 @@ use File::Copy;
 use Getopt::Long;
 use Pod::Usage;
 use POSIX;
+use Term::UI;
+use Term::ReadLine;
 
 ###############################################################################
 # User Editable Configuration Variables
@@ -73,7 +75,13 @@ $tools{'awk'} = "/usr/bin/awk";
 $tools{'cp'} = "/bin/cp";
 $tools{'yes'} = "/usr/bin/yes";
 $tools{'plutil'} = "/usr/bin/plutil";
-$tools{'git'} = "/usr/bin/git";
+$tools{'git'} = "/usr/bin/git";			# Used if git support is enabled
+$tools{'make'} = "/usr/bin/make";		# Used when installing perl modules
+$tools{'gcc'} = "/usr/bin/gcc";			# Used when installing perl modules
+$tools{'perl'} = "/usr/bin/perl";		# Used when installing perl modules
+
+# CPANM location
+my $cpanmURL = "http://cpanmin.us";
 
 ###############################################################################
 # Configuration Variables - Don't change
@@ -105,6 +113,7 @@ my $progress = 0; # Show curl download progress (0 = false)
 my $help = 0; # Show help info (0 = false)
 my $reset = 0; # Reset the modification date (0 = false)
 my $ignoreModDate = 0; # Ignore modification date (0 = false)
+my $installPerlDependencies = 0; # Whether to attempt to install perl modules (0 = false)
 my $showScriptVersion = 0; # Show script version (0 = false)
 my $testScript = 0; # Test the script has the appropriate items (0 = false)
 
@@ -131,6 +140,73 @@ my @supportedDownloadTypes = ("pkg", "mpkg", "dmg", "zip", "tar", "tar.gz", "tgz
 # Helper Functions - Dependencies
 ###############################################################################
 
+sub installPerlDependencies {
+	# Check for the Xcode command line tools.
+	if ( ! -e $tools{'make'} || ! -e $tools{'gcc'} ) {
+		logMessage("stderr", "ERROR: Installation of Perl Modules requires the Xcode Command Line tools to be installed.", undef);
+		logMessage("stderr", " - Please install these tools and try again. If the tools are installed, update the scripts ", undef);
+		logMessage("stderr", "   location for make and gcc. ", undef);
+		exit 1;
+	}
+	
+	# Check for cURL
+	if ( ! -e $tools{'curl'} ) {
+		logMessage("stderr", "ERROR: cURL not found at $tools{'curl'}. cURL is required to install the perl modules", undef);
+		exit 1;
+	}
+
+	# Prompt user to continue
+	logMessage("stdout", "You are attempting to install the required Perl modules...", undef);
+	logMessage("stdout", "This uses the CPANM script from $cpanmURL, and will prompt for a root password to install the modules at the system level", undef);
+
+	my $question = Term::ReadLine->new('');
+    my $answer = $question->ask_yn(
+                        prompt => 'Are you sure you would like to continue?',
+                        default => 'y',
+                 );
+	
+	if (! $answer ) {
+		# User selected no - so bail
+		logMessage("stdout", "Exiting...", undef);
+		exit 0;
+	} else {
+		logMessage("stdout", "Attempting installation of require Perl Modules and their dependencies...", undef);
+	}
+
+	# Download CPANM
+ 	my $cpanmTempFile = File::Temp->new();
+ 	my $cpanm = $cpanmTempFile->filename;	
+	system("$tools{'curl'} --location -o $cpanm $cpanmURL");
+	
+	# Check download is a valid perl script
+	system("$tools{'perl'} -c $cpanm");
+	if ( $? >> 8 != 0 ) {
+		logMessage("stderr", "ERROR: CPANM download from $cpanmURL has failed... Please manually check the URL leads to a valid perl script, or installing the required modules via normal CPAN.", undef);
+		exit 1;		
+	} else {
+		# It is so set it to being executable
+		chmod 0755, $cpanm;
+	}
+	
+	# Attempt to install the required modules and any associated dependencies
+	system("$cpanm --sudo Date::Parse");
+	system("$cpanm --sudo Mail::Mailer");
+	system("$cpanm --sudo URI::Escape");
+	system("$cpanm --sudo URI::URL");
+	system("$cpanm --sudo WWW::Mechanize");
+
+	logMessage("stdout", "Attempted installation complete. The script will now check whether it worked...", undef);
+
+	# Run the check to determine if it's worked or not
+	my $dependencyCheck = checkPerlDependencies();
+	if ($dependencyCheck) {
+		logMessage("stdout", "The required perl modules have been sucessfully installed...", undef);
+		exit 0;
+	} else {
+		exit 1;
+	}
+}
+
 sub checkPerlDependencies {
 	my $missingDependencies = 0;
 	my $perlPlistLib = dirname($0) . "/perlplist.pl";
@@ -140,17 +216,22 @@ sub checkPerlDependencies {
 	eval { require URI::Escape;    }; $missingDependencies = 1 if $@;
 	eval { require URI::URL;       }; $missingDependencies = 1 if $@;
 	eval { require WWW::Mechanize; }; $missingDependencies = 1 if $@;
-	eval { require $perlPlistLib;  }; $missingDependencies = 1 if $@;
 	
 	if ($missingDependencies) {
-		logMessage("stderr", "ERROR: Required Perl Modules were not found. Please ensure that Date::Parse, Mail::Mailer, URI::Escape, URI::URL, and WWW::Mechanize are installed.", "/dev/null");
-		logMessage("stderr", " - perlplist.pl also needs to be in the same directory as this script.", "/dev/null");
+		logMessage("stderr", "ERROR: Required Perl Modules were not found (you can attempt to install them by running autoMunkiImporter.pl --install-dependencies ).", "/dev/null");
+		logMessage("stderr", " - Please ensure that Date::Parse, Mail::Mailer, URI::Escape, URI::URL, and WWW::Mechanize are installed.", "/dev/null");
 		exit 1;
 	} else {
-		use Date::Parse;
-		return 1;
+		eval { require $perlPlistLib;  }; $missingDependencies = 1 if $@;
+		if ($missingDependencies) {
+			logMessage("stderr", "ERROR: perlplist.pl needs to be in the same directory as this script.", "/dev/null");
+			exit 1;
+		} else {
+			use Date::Parse;
+			return 1;
+		}
 	}
-	
+		
 	return 0;
 }
 
@@ -852,9 +933,6 @@ sub defaultSettings {
 # Main App - Prep
 ###############################################################################
 
-# Check Pre-reqs are meet
-checkPerlDependencies() or die;
-
 # Handle Command Line options
 GetOptions ('data=s'     	=> \$dataPlistPath, 
 			'settings=s'	=> \$defaultSettingsPlistPath,
@@ -864,6 +942,7 @@ GetOptions ('data=s'     	=> \$dataPlistPath,
 			'help|h|?'   	=> \$help, 
 			'version'    	=> \$showScriptVersion, 
 			'ignoreModDate' => \$ignoreModDate,
+			'install-dependencies' => \$installPerlDependencies,
 			'test' 			=> \$testScript,
 			'reset'      	=> \$reset);
 
@@ -875,6 +954,22 @@ if ($showScriptVersion) {
 	print $scriptVersion . "\n";
 	exit 0;
 }
+
+# Try to install the required dependencies
+if ($installPerlDependencies) {
+	installPerlDependencies();
+	# installPerlDependencies will exit the script on both success and failure.
+} else {
+	# Delete the reference to the tools required for building the perl modules
+	# as they are no longer required for the script, and if they aren't present
+	# it should not cause a fatal error
+	delete($tools{'make'});
+	delete($tools{'gcc'});
+	delete($tools{'perl'});
+}
+
+# Check Pre-reqs are meet
+checkPerlDependencies() or die;
 
 # Get default settings
 $defaultSettingsPlist = readDefaultSettingsPlist($defaultSettingsPlistPath);
@@ -1406,6 +1501,7 @@ autoMunkiImporter.pl [options]
 	--download 				Only download the file (doesn't import into Munki)
 	--help | -h | -?			Show this help text
 	--ignoreModDate				Ignore the modified date and version info from the data plist
+	--install-dependencies      Attempt to install the required Perl Modules
 	--progress | -p				Prints progress information to STDOUT
 	--reset					Resets the modified date for an app
 	--settings /path/to/settings.plist	Optional path to a default settings plist
@@ -1432,6 +1528,10 @@ modified time or import to Munki.
 =item B<--help | -h | -?>
 
 Show this usage and help text.
+
+=item B<--install-dependencies>
+
+Attempt to install the required Perl Modules using the CPANM script.
 
 =item B<--ignoreModDate>
 
