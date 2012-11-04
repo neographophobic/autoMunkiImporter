@@ -11,11 +11,11 @@
 		<key>emailReports</key>
 		<true/>
 		<key>itemToImport</key>
-		<string>Adobe Reader X Installer.pkg</string>
+		<string>Adobe Reader * Installer.pkg</string>
 		<key>munkiimportOptions</key>
 		<string>--subdirectory &quot;apps/adobe&quot;</string>
 		<key>name</key>
-		<string>AdobeReaderX</string>
+		<string>AdobeReader</string>
 		<key>secondLinkRegex</key>
 		<string>location.href\s*=\s*&apos;(.+?)&apos;</string>
 		<key>type</key>
@@ -28,6 +28,6 @@
 	<key>description</key>
 	<string>Adobe Reader (formally known as Acrobat Reader)</string>
 	<key>display_name</key>
-	<string>Adobe Reader X</string>
+	<string>Adobe Reader</string>
 </dict>
 </plist>
