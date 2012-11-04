@@ -181,7 +181,7 @@ sub installPerlDependencies {
 	my $question = Term::ReadLine->new('');
     my $answer = $question->ask_yn(
                         prompt => 'Are you sure you would like to continue?',
-                        default => 'y',
+                        default => 'n',
                  );
 	
 	if (! $answer ) {
