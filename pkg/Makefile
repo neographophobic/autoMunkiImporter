@@ -15,13 +15,14 @@ PAYLOAD=\
 		pack-usr-local-share-man-man1 \
 		pack-resource-background \
 		pack-resource-license \
-		pack-resource-readme
+		pack-resource-readme \
+		pack-resource-postflight
 
-# Sample Data Plists
+# Example Data Plists
 pack-library-application_support-autoMunkiImporter: l_Library_Application_Support_autoMunkiImporter
-	@sudo ${CP} -R sample_plists/*.plist ${WORK_D}/Library/Application\ Support/autoMunkiImporter/
-	@sudo chmod 0664 ${WORK_D}/Library/Application\ Support/autoMunkiImporter/*.plist
-	@sudo chown -R root:admin ${WORK_D}/Library/Application\ Support/autoMunkiImporter/*.plist
+	@sudo ${CP} -R -L _example_plists ${WORK_D}/Library/Application\ Support/autoMunkiImporter/
+	@sudo chmod 0664 ${WORK_D}/Library/Application\ Support/autoMunkiImporter/_example_plists/*
+	@sudo chown -R root:admin ${WORK_D}/Library/Application\ Support/autoMunkiImporter/_example_plists
 
 l_Library_Application_Support_autoMunkiImporter: l_Library_Application_Support
 	@sudo mkdir -p ${WORK_D}/Library/Application\ Support/autoMunkiImporter
@@ -94,6 +95,9 @@ pack-resource-license:
 
 pack-resource-readme:
 	@sudo ${INSTALL} -m 755 readme.rtf ${RESOURCE_D}/ReadMe.rtf
+
+pack-resource-postflight:
+	@sudo ${INSTALL} -m 755 postflight.sh ${RESOURCE_D}/postflight
 
 # Overwrite Luggage defaults
 modify_packageroot:
