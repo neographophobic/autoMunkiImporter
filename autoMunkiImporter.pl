@@ -117,6 +117,7 @@ my $help = 0; # Show help info (0 = false)
 my $reset = 0; # Reset the modification date (0 = false)
 my $ignoreModDate = 0; # Ignore modification date (0 = false)
 my $installPerlDependencies = 0; # Whether to attempt to install perl modules (0 = false)
+my $forceInstallPerlDependencies = 0; # Whether to force install perl modules (0 = false)
 my $showScriptVersion = 0; # Show script version (0 = false)
 my $testScript = 0; # Test the script has the appropriate items (0 = false)
 
@@ -174,24 +175,26 @@ sub installPerlDependencies {
 		exit 1;
 	}
 
-	# Prompt user to continue
-	logMessage(LOG_WARNING, "You are attempting to install the required Perl modules...", $logFile);
-	logMessage(LOG_WARNING, "This uses the CPANM script from $cpanmURL, and will prompt for a root password to install the modules at the system level", $logFile);
-
-	my $question = Term::ReadLine->new('');
-    my $answer = $question->ask_yn(
-                        prompt => 'Are you sure you would like to continue?',
-                        default => 'n',
-                 );
+	if (! $forceInstallPerlDependencies ) {
+		# Prompt user to continue
+		logMessage(LOG_WARNING, "You are attempting to install the required Perl modules...", $logFile);
+		logMessage(LOG_WARNING, "This uses the CPANM script from $cpanmURL, and will prompt for a root password to install the modules at the system level", $logFile);
 	
-	if (! $answer ) {
-		# User selected no - so bail
-		logMessage(LOG, "Exited without attempting to install the modules...", $logFile);
-		exit 0;
-	} else {
-		logMessage(LOG, "Attempting installation of require Perl Modules and their dependencies...", $logFile);
+		my $question = Term::ReadLine->new('');
+		my $answer = $question->ask_yn(
+							prompt => 'Are you sure you would like to continue?',
+							default => 'n',
+					 );
+		
+		if (! $answer ) {
+			# User selected no - so bail
+			logMessage(LOG, "Exited without attempting to install the modules...", $logFile);
+			exit 0;
+		} else {
+			logMessage(LOG, "Attempting installation of require Perl Modules and their dependencies...", $logFile);
+		}
 	}
-
+	
 	# Download CPANM
  	my $cpanmTempFile = File::Temp->new();
  	my $cpanm = $cpanmTempFile->filename;	
@@ -1068,7 +1071,8 @@ GetOptions ('data=s'     	=> \$dataPlistPath,
 			'help|h|?'   	=> \$help, 
 			'version'    	=> \$showScriptVersion, 
 			'ignoreModDate' => \$ignoreModDate,
-			'install-dependencies' => \$installPerlDependencies,
+			'install-dependencies'       => \$installPerlDependencies,
+			'force-install-dependencies' => \$forceInstallPerlDependencies,
 			'test' 			=> \$testScript,
 			'reset'      	=> \$reset);
 
@@ -1096,7 +1100,7 @@ if ($showScriptVersion) {
 }
 
 # Try to install the required dependencies
-if ($installPerlDependencies) {
+if ($installPerlDependencies || $forceInstallPerlDependencies) {
 	# installPerlDependencies will exit the script regardless of it's outcome.
 	installPerlDependencies();
 } else {
@@ -1625,9 +1629,10 @@ autoMunkiImporter.pl [options]
  Options:
 	--data /path/to/data[.plist]		Path to the data plist or directory containing data plists
 	--download 				Only download the file (doesn't import into Munki)
+	--force-install-dependencies		Force install required Perl Modules
 	--help | -h | -?			Show this help text
 	--ignoreModDate				Ignore the modified date and version info from the data plist
-	--install-dependencies      Attempt to install the required Perl Modules
+	--install-dependencies      		Attempt to install the required Perl Modules
 	--reset					Resets the modified date for an app
 	--silent				Suppresses output to STDOUT and STDERR
 	--settings /path/to/settings.plist	Optional path to a default settings plist
@@ -1650,6 +1655,10 @@ See B<DATA PLIST> for structure of the plist.
 
 Download the file to /tmp, and exits, without importing the item to Munki. It does not update the 
 modified time or import to Munki.
+
+=item B<--force-install-dependencies>
+
+Force install the required Perl Modules using the CPANM script.
 
 =item B<--help | -h | -?>
 
