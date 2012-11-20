@@ -120,7 +120,9 @@ rm -r /Library/Logs/autoMunkiImporter
 sudo rm -r /usr/local/autoMunkiImporter
 sudo rm /usr/local/share/man/man1/autoMunkiImporter.pl.1
 sudo rm /private/etc/paths.d/autoMunkiImporter
-sudo pkgutil --forget au.edu.anu.pkg.AutoMunkiImporter
+sudo launchctl unload /Library/LaunchDaemons/com.github.neographophobic.autoMunkiImporter.plist
+sudo rm /Library/LaunchDaemons/com.github.neographophobic.autoMunkiImporter.plist
+sudo pkgutil --forget com.github.neographophobic.pkg.AutoMunkiImporter
 				</pre></code>				
 			</section>
 		</div><!-- content -->
