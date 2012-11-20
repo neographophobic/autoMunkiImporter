@@ -3,7 +3,7 @@
 
 include /usr/local/share/luggage/luggage.make
 
-PACKAGE_VERSION=0.3.0-rc1
+PACKAGE_VERSION=0.3.0
 TITLE=AutoMunkiImporter
 REVERSE_DOMAIN=com.github.neographophobic.pkg
 PLIST_PATH=prototype.plist

@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "AUTOMUNKIIMPORTER 1"
-.TH AUTOMUNKIIMPORTER 1 "2012-10-15" "0.3.0-rc1" "Tool Reference Manual"
+.TH AUTOMUNKIIMPORTER 1 "2012-11-20" "0.3.0" "Tool Reference Manual"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -133,26 +133,28 @@
 autoMunkiImporter \- Automatically import apps into Munki
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
-autoMunkiImporter.pl \-\-data /path/to/data[.plist] [options]
+autoMunkiImporter.pl [options]
 .PP
-.Vb 11
+.Vb 10
 \& Options:
-\&        \-\-data /path/to/data[.plist]            Path to the data plist or directory containing data plists (required)
+\&        \-\-data /path/to/data[.plist]            Path to the data plist or directory containing data plists
 \&        \-\-download                              Only download the file (doesn\*(Aqt import into Munki)
+\&        \-\-force\-install\-dependencies            Force install required Perl Modules
 \&        \-\-help | \-h | \-?                        Show this help text
 \&        \-\-ignoreModDate                         Ignore the modified date and version info from the data plist
-\&        \-\-progress | \-p                         Prints progress information to STDOUT
+\&        \-\-install\-dependencies                  Attempt to install the required Perl Modules
 \&        \-\-reset                                 Resets the modified date for an app
+\&        \-\-silent                                Suppresses output to STDOUT and STDERR
 \&        \-\-settings /path/to/settings.plist      Optional path to a default settings plist
 \&        \-\-test                                  Tests that the script has all of the required items and rights
-\&        \-\-verbose | \-v                          Show verbose output to STDOUT
-\&        \-\-version                               Prints scripts version to STDOUT
+\&        \-\-verbose | \-v                          Show verbose output, can be used twice for debug info as well
+\&        \-\-version                               Prints scripts version
 .Ve
 .SH "OPTIONS"
 .IX Header "OPTIONS"
 .IP "\fB\-\-data\fR /path/to/data[.plist]" 8
 .IX Item "--data /path/to/data[.plist]"
-Path to the data plist, or a directory containing data plists (required). The data plist contains 
+Path to the data plist, or a directory containing data plists. The data plist contains 
 the configuration the script needs to download a particular application.
 .Sp
 See \fB\s-1DATA\s0 \s-1PLIST\s0\fR for structure of the plist.
@@ -160,21 +162,29 @@ See \fB\s-1DATA\s0 \s-1PLIST\s0\fR for structure of the plist.
 .IX Item "--download"
 Download the file to /tmp, and exits, without importing the item to Munki. It does not update the 
 modified time or import to Munki.
+.IP "\fB\-\-force\-install\-dependencies\fR" 8
+.IX Item "--force-install-dependencies"
+Force install the required Perl Modules using the \s-1CPANM\s0 script.
 .IP "\fB\-\-help | \-h | \-?\fR" 8
 .IX Item "--help | -h | -?"
 Show this usage and help text.
+.IP "\fB\-\-install\-dependencies\fR" 8
+.IX Item "--install-dependencies"
+Attempt to install the required Perl Modules using the \s-1CPANM\s0 script.
 .IP "\fB\-\-ignoreModDate\fR" 8
 .IX Item "--ignoreModDate"
 Ignore the modified date and version info from the data plist. This will cause the item to be 
 (re)imported into Munki.
-.IP "\fB\-\-progress | \-p\fR" 8
-.IX Item "--progress | -p"
-Reports progress of the script to \s-1STDOUT\s0.
 .IP "\fB\-\-reset\fR" 8
 .IX Item "--reset"
 Resets the modified date of an application to the current modification date, without downloading or 
 importing the item into Munki. Use this when the latest version of an application is in your Munki 
 repo, so that this script doesn't attempt to re add it, of if you want to skip a version.
+.IP "\fB\-\-silent\fR" 8
+.IX Item "--silent"
+Suppresses output to \s-1STDOUT\s0 and \s-1STDERR\s0. Verbose information is still written to the log. If 
+\&\-\-silent is provided in conjunction with \-\-install\-dependencies, \-\-test, or \-\-version it is 
+ignored.
 .IP "\fB\-\-settings /path/to/settings.plist\fR" 8
 .IX Item "--settings /path/to/settings.plist"
 Optional path to a global settings plist. If not provided 
@@ -186,7 +196,11 @@ Checks that the script passes it's initial checks, and that it has permissions t
 the appropriate locations.
 .IP "\fB\-\-verbose | \-v\fR" 8
 .IX Item "--verbose | -v"
-In addition to writing to the log, show log and progress messages on \s-1STDOUT\s0.
+Show verbose output. If used a second time in addition to the verbose info, you will also get
+debug information. The verbose version of the output is logged when the logging level is set
+to verbose or lower. Debug information is also written to the log when verbose is provided twice.
+.Sp
+If \-\-silent is provided, it takes priority and suppresses all output to \s-1STDOUT\s0.
 .IP "\fB\-\-version\fR" 8
 .IX Item "--version"
 Prints scripts version to \s-1STDOUT\s0.
@@ -519,8 +533,9 @@ server for your machine to localhost:8080 (or the appropriate values). Then
 tail \-f ~/Library/Logs/squid/squid\-access.log and you will see what URLs are accessed.
 .SH "TROUBLESHOOTING"
 .IX Header "TROUBLESHOOTING"
-The Australian National University (\s-1ANU\s0) has released this script as a service to the broader 
-community, as is, and with no guarantees of support.
+I has released this script as a service to the broader community, as is, in an unsupported manner 
+with no guarantees of support from either myself or my employer (The Australian National 
+University).
 .PP
 \&\fBTry running munkiimport manually\fR
 .PP
@@ -552,7 +567,7 @@ script to work. In this case one of the returned headers will be X\-Content-Type
 Also try using different (or no) User Agent (curl \-\-user\-agent \*(L"my agent\*(R").
 .SH "LICENCE"
 .IX Header "LICENCE"
-Copyright (c) 2012, The Australian National University
+Copyright (c) 2012, Adam Reed
 .PP
 All rights reserved.
 .PP
@@ -566,9 +581,8 @@ Redistributions in binary form must reproduce the above copyright notice, this l
 conditions and the following disclaimer in the documentation and/or other materials provided with 
 the distribution.
 .IP "\(bu" 4
-Neither the name of the \*(L"The Australian National University\*(R" nor the names of its 
-contributors may be used to endorse or promote products derived from this software without specific 
-prior written permission.
+Neither the name of the \*(L"Adam Reed\*(R" nor the names of its contributors may be used to 
+endorse or promote products derived from this software without specific prior written permission.
 .PP
 \&\s-1THIS\s0 \s-1SOFTWARE\s0 \s-1IS\s0 \s-1PROVIDED\s0 \s-1BY\s0 \s-1THE\s0 \s-1COPYRIGHT\s0 \s-1HOLDERS\s0 \s-1AND\s0 \s-1CONTRIBUTORS\s0 \*(L"\s-1AS\s0 \s-1IS\s0\*(R" \s-1AND\s0 \s-1ANY\s0 \s-1EXPRESS\s0 \s-1OR\s0 
 \&\s-1IMPLIED\s0 \s-1WARRANTIES\s0, \s-1INCLUDING\s0, \s-1BUT\s0 \s-1NOT\s0 \s-1LIMITED\s0 \s-1TO\s0, \s-1THE\s0 \s-1IMPLIED\s0 \s-1WARRANTIES\s0 \s-1OF\s0 \s-1MERCHANTABILITY\s0 \s-1AND\s0 
