@@ -41,8 +41,8 @@
 					<div class="menuitem yellowborder clearfix">
 						<li><a href="install.html">Install</a>
 						<ul>
-							<li><a href="#dependencies">Dependencies</a></li>
 							<li><a href="#autoMunkiImporter">Auto Munki Importer</a></li>
+							<li><a href="#dependencies">Dependencies</a></li>
 							<li><a href="#remove">Remove</a></li>
 						</ul></li>
 					</div>
@@ -68,54 +68,9 @@
 			</header>
 			<hr class="large yellowbackground">
 			
-			<section id="dependencies">
-				<h3>Dependencies</h3>
-				<p>For Auto Munki Importer to run, a number of dependencies are required. During this stage we will ensure that the dependencies have been satisfied and then complete the install.</p>
-				
-				<h4>Install Xcode Command Line Tools</h4>
-				<p>The Xcode Command Line Tools can be installed from within Xcode (dowloaded for either the App Store or the Developer Site), or as a separate download from <a href="https://developer.apple.com/downloads/index.action">Apple's Developer Site</a> (which requires a free developer account, but removes the need for a complete Xcode install - this is the method I use).</p>
-				<p>From the developer site, find the latest version of the tools that matches your operating system, download and then install them (standard Apple Installer Package).</p>
-
-				<h4>Perl Modules</h4>
-				<p>Auto Munki Importer utilises a number of third party Perl modules to enable the required functionality. These need to be installed before the script will work. The easiest way to install Perl modules is via CPAN. Installation of these modules requires compilers and other tools included in the Xcode Command Line tools package.</p>
-				<p>The following steps will ensure that all of the required modules are installed</p>
-
-				<ol>
-					<h5><li>Configure CPAN</h5>
-					<p>CPAN is the <a href="http://www.cpan.org">Comprehensive Perl Archive Network</a> which maintains a substantial collection of third party Perl Modules. CPAN has a command line tool that can be used to install modules and their dependencies. We will use CPAN to install the required modules for Auto Munki Importer.</p>
-					<p>If you have previously configured CPAN you can skip this step.</p>
-					<p>In terminal run the following command:-<br>
-						<code>sudo cpan</code>
-						<p>When prompted, enter <code>yes</code> to accept the defaults (Would you like me to configure as much as possible automatically? and Would you like me to automatically choose the best CPAN mirror sites for you?)</p>
-						<p>Once the configuration is finished you should be configured you should be at a CPAN prompt:-<br>
-						<code>cpan[1]&gt; </code>
-						</p>
-					</p>
-					</li>
-
-					<h5><li>Install Perl Modules</h5>
-					<p>While still in CPAN (<code>sudo cpan</code> if you aren't) run the following commands which will install the module and all dependencies (or tell you it's already up to date if installed). If prompted accept the default answer.
-					<ol>
-						<li><code>install Date::Parse</code></li>
-						<li><code>install Mail::Mailer</code></li>
-						<li><code>install URI::Escape</code></li>
-						<li><code>install URI::URL</code></li>
-						<li><code>install WWW:Mechanize</code></li>
-						&nbsp;
-					</ol>
-					</li>
-
-					<h5><li>Verify Installation</h5>
-					<p>You can test if a module is installed by running <code>perl -MModule::Name -e 1</code> on the command line. There will be no output if it's installed, otherwise you will get an error ("Can't locate Module/Name.pm in @INC(...)") if it's not installed.</p>
-					<p>Note that there is no space between -M and the module name, e.g. <code>-MDate::Parse</code>.</p>
-					</li>
-				</ol>
-			</section>
-			<hr class="large yellowbackground">
-			
 			<section id="autoMunkiImporter">
 				<h3>Auto Munki Importer Installation</h3>
-				<p>Auto Munki Importer ships as a standard Apple Installer Package. Download it <a href="download.html">from here</a>, then install it like any normal installer package (you will need to enter an administrators username and password.)</p>
+				<p>Auto Munki Importer ships as a standard Apple Installer Package. Download it <a href="download.html">from here</a>, and then install it like any normal installer package (you will need to enter an administrators username and password.)</p>
 				
 				<h4>What is installed?</h4>
 				<p><code>/usr/local/autoMunkiImporter/*</code><br>
@@ -123,7 +78,7 @@
 				</p>
 
 				<p><code>/Library/&#8203;Application Support/&#8203;autoMunkiImporter/*</code><br>
-				This directory holds sample data files that are installed by default. It needs to be writable by the user that the script is run by.
+				This directory holds example data files that are installed by default. The examples are installed into <code>/Library/&#8203;Application Support/&#8203;autoMunkiImporter/_example_plists/*</code> and then copied into the parent directory if they don't already exist (Auto Munki Importer ignores <code>_example_plists</code> by default). It needs to be writable by the user that the script is run by.
 				</p>
 
 				<p><code>/Library/&#8203;Logs/&#8203;autoMunkiImporter/*</code><br>
@@ -141,9 +96,24 @@
 			</section>
 			<hr class="large yellowbackground">
 
+			<section id="dependencies">
+				<h3>Dependencies</h3>
+				<p>For Auto Munki Importer to run, a number of third party perl modules are required.</p>
+				
+				<h4>Install Xcode Command Line Tools</h4>
+				<p>The Xcode Command Line Tools can be installed from within Xcode (dowloaded for either the App Store or the Developer Site), or as a separate download from <a href="https://developer.apple.com/downloads/index.action">Apple's Developer Site</a> (which requires a free developer account, but removes the need for a complete Xcode install - this is the method I use).</p>
+				<p>From the developer site, find the latest version of the tools that matches your operating system, download and then install them (standard Apple Installer Package).</p>
+
+				<h4>Perl Modules</h4>
+				<p>Auto Munki Importer utilises a number of third party Perl modules to enable the required functionality. Installation of these modules requires compilers and other tools included in the Xcode Command Line tools package. These need to be installed before the script will work.</p>
+				<p>Auto Munki Importer has the ability to install the required modules. It uses <code><a href="http://search.cpan.org/~miyagawa/App-cpanminus/lib/App/cpanminus.pm">App::cpanminus</a></code> which is a dependency free, zero configuration script that can get, unpack, build and install modules from the <a href="http://www.cpan.org">Comprehensive Perl Archive Network</a> (CPAN). It installs the modules at the system level, so you will need to provide your password during the installation.</p>
+				<p>The installer package installs the required dependencies <code>(Date::Parse, Mail::Mailer, URI::Escape, URI::URL, WWW:Mechanize)</code> during postflight, however you can re-run the dependency install at any time by running <code>autoMunkiImporter.pl --install-dependencies</code> if required.</p>
+			</section>
+			<hr class="large yellowbackground">
+			
 			<section id="remove">
 				<h3>Remove Auto Munki Importer</h3>
-				<p>Pending you haven't changed any of the default locations, the following commands will remove all items installed by the installer package, or created during normal operation of the script.</p>
+				<p>Pending you haven't changed any of the default locations, the following commands will remove all items installed by the installer package (except for the Perl dependencies), or created during normal operation of the script.</p>
 				<code><pre>
 rm -r /Library/Application\ Support/autoMunkiImporter
 rm -r /Library/Logs/autoMunkiImporter

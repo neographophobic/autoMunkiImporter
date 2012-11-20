@@ -71,7 +71,7 @@
 
 			<h3>How to use it</h3>
 			<p>After the script and its dependencies have been <a href="install.html">installed</a> and <a href="configuration.html">configured</a>, In terminal (or automatically via a Launch Daemon) run:-<br>
-				<code>autoMunkiImporter.pl --data /path/to/data[.plist] [options]</code>
+				<code>autoMunkiImporter.pl [options]</code>
 			</p>
 			
 			<h4>Options</h4>
@@ -80,7 +80,7 @@
 					<code>--data /path/to/data[.plist]</code>
 				</div>
 				<div class="seven columns omega">
-					<p>Path to the data plist, or a directory containing data plists (required). The data plist contains the configuration the script needs to download a particular application.</p>
+					<p>Path to the data plist, or a directory containing data plists. The data plist contains the configuration the script needs to download a particular application.</p>
 					<p>See <a href="dataplists.html">Import Data Plist(s)</a> for structure of the plist.</p>
 				</div>
 			</div>
@@ -90,6 +90,14 @@
 				</div>
 				<div class="seven columns omega">
 					<p>Download the file to <code>/tmp</code>, and exits, without importing the item to Munki. It does not update the modified time or import to Munki.</p>
+				</div>
+			</div>
+			<div class="row clearfix">
+				<div class="five columns alpha">
+					<code>--force-install-dependencies</code>
+				</div>
+				<div class="seven columns omega">
+					<p>Force install the required Perl Modules using the CPANM script.</p>
 				</div>
 			</div>
 			<div class="row clearfix">
@@ -110,10 +118,10 @@
 			</div>
 			<div class="row clearfix">
 				<div class="five columns alpha">
-					<code>--progress | -p</code>
+					<code>--install-dependencies</code>
 				</div>
 				<div class="seven columns omega">
-					<p>Prints progress information to STDOUT.</p>
+					<p>Attempt to install the required Perl Modules using the CPANM script.</p>
 				</div>
 			</div>
 			<div class="row clearfix">
@@ -134,6 +142,14 @@
 			</div>
 			<div class="row clearfix">
 				<div class="five columns alpha">
+					<code>--silent</code>
+				</div>
+				<div class="seven columns omega">
+					<p>Suppresses output to STDOUT and STDERR. Verbose information is still written to the log. If --silent is provided in conjunction with --install-dependencies, --test, or --version it is ignored.</p>
+				</div>
+			</div>
+			<div class="row clearfix">
+				<div class="five columns alpha">
 					<code>--test</code>
 				</div>
 				<div class="seven columns omega">
@@ -145,7 +161,8 @@
 					<code>--verbose | -v</code>
 				</div>
 				<div class="seven columns omega">
-					<p>In addition to writing to the log, show the log and progress messages on STDOUT.</p>
+					<p>Show verbose output. If used a second time in addition to the verbose info, you will also get debug information. The verbose version of the output is logged when the logging level is set to verbose or lower. Debug information is also written to the log when verbose is provided twice.</p>
+					<p>If --silent is provided, it takes priority and suppresses all output to STDOUT.</p>
 				</div>
 			</div>
 			<div class="row clearfix">

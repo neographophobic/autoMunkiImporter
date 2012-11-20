@@ -91,7 +91,7 @@
 						<li>Can be installed from within Xcode (dowloaded for either the App Store or the Developer Site), or </li>
 						<li>As a separate download from <a href="https://developer.apple.com/downloads/index.action">Apple's Developer Site</a>.</li>
 					</ul></li>
-					<li>Third Party Perl Modules (installed via CPAN)
+					<li>Third Party Perl Modules
 					<ul class="square">
 						<li>Date::Parse</li>
 						<li>Mail::Mailer</li>
@@ -111,6 +111,13 @@
 							<li>Initial Public Release</li>
 							<li>Added support for Git, including checking in a new pkginfos, and also pulling and pushing to remote repos</li>
 							<li>Improved verification of download types to first try the basename of the URL, and if that fails, try the last query paramater</li>
+							<li>Made --data /path/to/data[.plist] optional, by setting the default to <code>/Library/&#8203;Application Support/&#8203;autoMunkiImporter/</code>
+							<li>Added option to install the required perl modules, automating the process.</li>
+							<li>Significant changes to how output from the script (and the associated logging) is handled.</li>
+							<ul>
+								<li>Support for different type of log message (normal, warning, and error)
+								<li>Support for different levels of logging (silent (--silent), normal (default), verbose (--verbose), and debug (--verbose --verbose))</li>
+								<li>Provided the default log file location within the script (<code>/Library/&#8203;Logs/&#8203;autoMunkiImporter/&#8203;autoMunkiImporter.log</code>) which can be overridden via default settings plist)</li>
 						</ul>
 					</li>
 					<li><strong>v0.2.0</strong> <em>(2012-07-31 - Private Release)</em>: 
