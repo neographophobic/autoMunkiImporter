@@ -1583,7 +1583,7 @@ foreach $dataPlistPath (@dataPlists) {
 	if ($gitEnabled) {
 		logMessage(LOG_VERBOSE, "Committing changes to git repo...", $logFile);
 		system("$tools{'git'} add $pkgInfoPlistPath > /dev/null 2>> $logFile");
-		system("$tools{'git'} commit -m \"$name ($packagedVersion) has been imported by the Automatic Munki Importer tool.\" --author \"autoMunkiImporter.pl <noreply\@anu.edu.au>\" > /dev/null 2>> $logFile");
+		system("$tools{'git'} commit -m \"$name ($packagedVersion) has been imported by the Automatic Munki Importer tool.\" --author \"autoMunkiImporter.pl <$fromAddress>\" > /dev/null 2>> $logFile");
 		# If we want to pull and push, push the changes back to the server
 		if ($gitPullAndPush) {
 			logMessage(LOG_VERBOSE, "Pushing latest changes to git server...", $logFile);
@@ -2082,8 +2082,9 @@ tail -f ~/Library/Logs/squid/squid-access.log and you will see what URLs are acc
 
 =head1 TROUBLESHOOTING
 
-The Australian National University (ANU) has released this script as a service to the broader 
-community, as is, and with no guarantees of support.
+I has released this script as a service to the broader community, as is, in an unsupported manner 
+with no guarantees of support from either myself or my employer (The Australian National 
+University).
 
 B<Try running munkiimport manually>
 
@@ -2116,7 +2117,7 @@ Also try using different (or no) User Agent (curl --user-agent "my agent").
 
 =head1 LICENCE
 
-Copyright (c) 2012, The Australian National University
+Copyright (c) 2012, Adam Reed
 
 All rights reserved.
 
@@ -2132,9 +2133,8 @@ conditions and the following disclaimer.
 conditions and the following disclaimer in the documentation and/or other materials provided with 
 the distribution.
 
-=item * Neither the name of the "The Australian National University" nor the names of its 
-contributors may be used to endorse or promote products derived from this software without specific 
-prior written permission.
+=item * Neither the name of the "Adam Reed" nor the names of its contributors may be used to 
+endorse or promote products derived from this software without specific prior written permission.
 
 =back
 

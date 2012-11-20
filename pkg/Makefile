@@ -5,7 +5,7 @@ include /usr/local/share/luggage/luggage.make
 
 PACKAGE_VERSION=0.3.0-rc1
 TITLE=AutoMunkiImporter
-REVERSE_DOMAIN=au.edu.anu.pkg
+REVERSE_DOMAIN=com.github.neographophobic.pkg
 PLIST_PATH=prototype.plist
 PAYLOAD=\
 		pack-library-application_support-autoMunkiImporter \
@@ -13,7 +13,6 @@ PAYLOAD=\
 		pack-private-etc-pathsd \
 		pack-usr-local-autoMunkiImporter \
 		pack-usr-local-share-man-man1 \
-		pack-resource-background \
 		pack-resource-license \
 		pack-resource-readme \
 		pack-resource-postflight
@@ -61,9 +60,9 @@ pack-usr-local-autoMunkiImporter: l_usr_local_autoMunkiImporter
 	@sudo ${CP} -R ../perlplist.pl ${WORK_D}/usr/local/autoMunkiImporter/
 	@sudo chmod 0755 ${WORK_D}/usr/local/autoMunkiImporter/perlplist.pl
 	@sudo chown -R root:wheel ${WORK_D}/usr/local/autoMunkiImporter/perlplist.pl
-	@sudo ${CP} -R ../tools/testAllApps.pl ${WORK_D}/usr/local/autoMunkiImporter/
-	@sudo chmod 0755 ${WORK_D}/usr/local/autoMunkiImporter/testAllApps.pl
-	@sudo chown -R root:wheel ${WORK_D}/usr/local/autoMunkiImporter/testAllApps.pl
+#	@sudo ${CP} -R ../tools/testAllApps.pl ${WORK_D}/usr/local/autoMunkiImporter/
+#	@sudo chmod 0755 ${WORK_D}/usr/local/autoMunkiImporter/testAllApps.pl
+#	@sudo chown -R root:wheel ${WORK_D}/usr/local/autoMunkiImporter/testAllApps.pl
 
 l_usr_local_autoMunkiImporter: l_usr_local
 	@sudo mkdir -p ${WORK_D}/usr/local/autoMunkiImporter
@@ -86,10 +85,7 @@ l_usr_local_share_man: l_usr_local_share
 	@sudo chown root:wheel ${WORK_D}/usr/local/share/man
 	@sudo chmod 0755 ${WORK_D}/usr/local/share/man
 
-# Package Background, License and Readme
-pack-resource-background:
-	@sudo ${INSTALL} -m 755 background.png ${RESOURCE_D}/background
-
+# Package License and Readme
 pack-resource-license:
 	@sudo ${INSTALL} -m 755 license.rtf ${RESOURCE_D}/License.rtf
 
