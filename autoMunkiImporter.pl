@@ -1537,6 +1537,26 @@ foreach $dataPlistPath (@dataPlists) {
 	###############################################################################
 	
 	logMessage(LOG, "Updating Pkginfo...", $logFile);
+
+	# Get the version of the new package
+	my $packagedVersion = perlValue(getPlistObject($pkgInfoPlist, "version"));
+
+	# Find if there are any installs items that have a CFBundleShortVersionString key
+	my @installsVersionPaths = pathsThatMatchPartialPathWithGrep($dataPlist, 'installs', '*', 'CFBundleShortVersionString');
+	if ( $#installsVersionPaths > 0 ) {
+		foreach my $installsItem (@installsVersionPaths) {
+			# Determine if the version should be replaced with the new package version
+			if (perlValue( getPlistObject( $dataPlist, 'installs', $$installsItem[1], 'CFBundleShortVersionString' )) eq "__VERSION__") {
+				logMessage(LOG_VERBOSE, "Updating a CFBundleShortVersionString version in the Pkginfo...", $logFile);
+				my @replacementArray = ('installs');
+				push(@replacementArray, $$installsItem[1]);
+				push(@replacementArray, 'CFBundleShortVersionString');
+				push(@replacementArray, $packagedVersion);
+				# Update version for the selected Installs item
+				setPlistObject($dataPlist, @replacementArray);
+			}
+		}
+	}
 	
 	# Add or override Munki's default keys with ones in our data plist
 	my %keysHash = perlHashFromNSDict(getPlistObject($dataPlist));
@@ -1558,7 +1578,6 @@ foreach $dataPlistPath (@dataPlists) {
 	saveDefaults($combinedPlist, $pkgInfoPlistPath);
 
 	# Save a copy of the version into the data plist
-	my $packagedVersion = perlValue(getPlistObject($pkgInfoPlist, "version"));
 	setPlistObject($dataPlist, "autoMunkiImporter", "modifiedDateCorrospoindingVersion", $packagedVersion);
 	saveDefaults($dataPlist, $dataPlistPath);
 	
