@@ -1029,6 +1029,8 @@ sub objectType {
   # vvv Added by Adam vvv
   } elsif ( $value =~ /(__)?NSTaggedDate/ ) {
     return "NSCFDate";
+  } elsif ( $value =~ /(__)?NSTaggedPointerString/ ) {
+  	return "NSCFString";
   # ^^^ Added by Adam ^^^
   } elsif ( $value =~ /(__)?NSCFData/ or $value =~ /NSConcreteData/ ) {
     return "NSCFData";
