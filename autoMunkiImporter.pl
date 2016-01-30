@@ -104,7 +104,7 @@ my $statusPlist = undef;
 my $defaultSettingsPlist = undef;
 
 # Script version
-my $scriptVersion = "v0.3.0";
+my $scriptVersion = "v0.4.0";
 
 # Munki Repo Path
 my $repo_path = undef;
