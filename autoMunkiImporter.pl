@@ -124,6 +124,7 @@ my $testScript = 0; # Test the script has the appropriate items (0 = false)
 # Global Variables for Default User Settings
 my $name = undef;					# App Name for item being imported
 my $userAgent = undef; 				# Web User Agent to present to sites
+my $userCookie = undef;             # User Cookie present to sites
 my $logFileMaxSizeInMBs = undef;	# Upper size of log files before they are rolled
 my $maxNoOfLogsToKeep = undef;		# No of log files to preserve
 my $emailReports = undef;			# Whether to email reports (0 = false, 1 = true)
@@ -609,7 +610,11 @@ sub handleRedirect {
 	my ($url) = @_;
 	my $initialURL = $url;
 
-	my $headers = `$tools{'curl'} --head --location --user-agent \"$userAgent\" \"$url\" 2>/dev/null`;
+    my $cookieString = "";
+    if (defined $userCookie && ! $userCookie eq ""){
+        $cookieString = "--cookie \"$userCookie\"";
+    }
+    my $headers = `$tools{'curl'} --head --location $cookieString --user-agent \"$userAgent\" \"$url\" 2>/dev/null`;
 	$headers =~ s/\r/\n/gi;
 		
 	# Search for the Location field
@@ -698,6 +703,11 @@ sub findDownloadLinkOnPage {
 	$mech->agent($userAgent);
 	logMessage(LOG_VERBOSE, "Using User Agent: " . $mech->agent, $logFile);
 
+    if (defined $userCookie && ! $userCookie eq ""){
+        $mech->add_header( 'Set-Cookie' => $userCookie);
+        logMessage(LOG_VERBOSE, "Using User Cookie: " . $userCookie, $logFile);
+    }
+    
 	eval { $mech->get($url); };
 	if ($@) {
 		logMessage(LOG_ERROR, "Can't download content of URL. Error was: $@", $logFile);
