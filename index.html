@@ -62,6 +62,11 @@
 				<h1>Auto Munki Importer</h1>
 			</header>
 			<hr class="large redbackground">
+				<blockquote>
+					<p>If you are looking at automating Munki, I no longer recommend that you use this code, and instead suggest you use <a href="https://github.com/autopkg/autopkg">AutoPkg</a> which is actively supported by the Munki community.</p>
+					<p>This project is no longer actively maintained.</p>
+				</blockquote>
+			<hr class="large redbackground">
 			<h3>What Is It?</h3>
 			<p>Auto Munki Importer is a Perl script that will, based on the input data, determine if there is a new version of an application available. If a new version is available it will download the new file, extract it, and then import it into Munki.</p>
 			<p>It can handle <a href="dataplists.html#static">static</a> URLs, <a href="dataplists.html#dynamic">dynamic</a> URLs where the URL or link to the URL changes based off the version (it can also handle landing pages before the actual download), and <a href="dataplists.html#sparkle">Sparkle</a> RSS feeds. This generic approach should allow you to monitor most applications.</p>
